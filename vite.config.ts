@@ -4,17 +4,16 @@ import path from 'path';
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 
 export default defineConfig(async ({ mode }) => {
-  // ✅ Load environment variables from .env files
+  // Load environment variables from .env files
   const env = loadEnv(mode, process.cwd());
-  process.env = { ...process.env, ...env };
 
-  // ✅ Base plugin list
+  // Base plugin list
   const plugins = [
     react(),
     runtimeErrorOverlay(),
   ];
 
-  // ✅ Dynamically import Replit plugins if in development and REPL_ID is set
+  // Dynamically import Replit plugins if in development and REPL_ID is set
   if (mode !== 'production' && process.env.REPL_ID !== undefined) {
     const { cartographer } = await import('@replit/vite-plugin-cartographer');
     const { devBanner } = await import('@replit/vite-plugin-dev-banner');
@@ -22,7 +21,7 @@ export default defineConfig(async ({ mode }) => {
   }
 
   return {
-    plugins: [react()],
+    plugins: plugins,  // Return the correct plugins array
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'client', 'src'),
@@ -30,14 +29,14 @@ export default defineConfig(async ({ mode }) => {
         '@assets': path.resolve(__dirname, 'attached_assets'),
       },
     },
-    root: path.resolve(__dirname, 'client'),
-     build: {
-    outDir: 'dist',  // Ensure this is correctly set
-  },
+    root: path.resolve(__dirname, 'client'),  // Make sure your app entry is inside `client/`
+    build: {
+      outDir: 'dist',  // Correct output directory for Vercel
+    },
     server: {
       fs: {
         strict: true,
-        deny: ['**/.*'],
+        deny: ['**/.*'],  // Deny access to hidden files (like `.env`)
       },
     },
   };
