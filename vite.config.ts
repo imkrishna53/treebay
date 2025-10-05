@@ -31,10 +31,9 @@ export default defineConfig(async ({ mode }) => {
       },
     },
     root: path.resolve(__dirname, 'client'),
-    build: {
-      outDir: path.resolve(__dirname, 'dist/public'),
-      emptyOutDir: true,
-    },
+     build: {
+    outDir: 'dist',  // Ensure this is correctly set
+  },
     server: {
       fs: {
         strict: true,
