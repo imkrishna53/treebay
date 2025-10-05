@@ -22,7 +22,7 @@ export default defineConfig(async ({ mode }) => {
   }
 
   return {
-    plugins,
+    plugins: [react()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'client', 'src'),
