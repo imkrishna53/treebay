@@ -26,14 +26,28 @@ app.use(express.json());
 
 
 
-
-
 const allowedOrigins = [
-  "*",
+  'https://treebay1.vercel.app', // Your Vercel frontend
+  'http://localhost:3000', // For local development
 ];
 
-// CORS middleware should come BEFORE static files
-app.use(cors());
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Enable if you're using cookies/sessions
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
+app.use(cors(corsOptions));
 
 
 // FIXED: Proper static file serving with MIME types
