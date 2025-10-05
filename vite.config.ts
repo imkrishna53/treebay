@@ -31,7 +31,7 @@ export default defineConfig(async ({ mode }) => {
     },
     root: path.resolve(__dirname, 'client'),  // Make sure your app entry is inside `client/`
     build: {
-      outDir: 'dist',  // Correct output directory for Vercel
+      outDir: path.resolve(__dirname, 'dist'), // Correct output directory for Vercel
     },
     server: {
       fs: {
