@@ -1,18 +1,13 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'wouter';
+// components/Navigation.jsx
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, Menu, X, FlaskConical } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, Link  } from "react-router-dom";
+import { useLocation } from 'wouter';
 
-const services = [
-  { name: 'Ethanol', path: '/services/ethanol' },
-  { name: 'Isobutanol', path: '/services/isobutanol' },
-  { name: 'Hydrogen Energy', path: '/services/hydrogen' },
-  { name: 'Biogas (FAME)', path: '/services/biogas' }
-];
-
-// Animation variants
+// Animation variants (same as before)
 const menuVariants = {
   closed: {
     opacity: 0,
@@ -76,12 +71,37 @@ const underlineVariants = {
   }
 };
 
+interface Service {
+  _id: string;
+  title: string;
+  slug: string;
+}
+
 export default function Navigation() {
   const [location] = useLocation();
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
+  const navigate = useNavigate();
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+  useEffect(() => {
+    fetchServices();
+  }, []);
 
-  const isActive = (path) => location === path;
+  const fetchServices = async () => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/services?fields=title,slug`);
+      const servicesData = await response.json();
+      setServices(servicesData);
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isActive = (path: string) => location === path;
 
   return (
     <header className="fixed top-0 w-full bg-background/95 backdrop-blur-sm border-b border-border z-50">
@@ -92,7 +112,7 @@ export default function Navigation() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Link href="/" className="flex items-center space-x-2 hover-elevate rounded-md px-3 py-2">
+            <Link to="/" className="flex items-center space-x-2 hover-elevate rounded-md px-3 py-2">
               <FlaskConical className="h-8 w-8 text-primary" />
               <span className="text-xl font-bold text-foreground">TreeBay Technologies</span>
             </Link>
@@ -107,7 +127,7 @@ export default function Navigation() {
               whileTap="tap"
               className="relative"
             >
-              <Link href="/" className="block px-4 py-2 rounded-md">
+              <Link to="/" className="block px-4 py-2 rounded-md">
                 <span className={`relative ${isActive('/') ? 'text-primary font-medium' : 'text-foreground'}`}>
                   Home
                   {isActive('/') && (
@@ -122,7 +142,7 @@ export default function Navigation() {
               </Link>
             </motion.div>
             
-            {/* Services Dropdown */}
+            {/* Dynamic Services Dropdown */}
             <motion.div 
               className="relative"
               variants={navItemVariants}
@@ -152,24 +172,51 @@ export default function Navigation() {
                     exit="closed"
                     className="absolute top-full left-0 mt-1 w-48 bg-popover border border-popover-border rounded-md shadow-lg z-10 overflow-hidden"
                   >
-                    {services.map((service, index) => (
-                      <motion.div
-                        key={service.path}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
-                      >
-                        <Link
-                          href={service.path}
-                          className="block px-4 py-3 text-sm text-popover-foreground hover:text-primary transition-colors"
-                          onClick={() => setIsServicesOpen(false)}
-                          data-testid={`link-service-${service.name.toLowerCase().replace(' ', '-')}`}
+                    {loading ? (
+                      <div className="px-4 py-3 text-sm text-muted-foreground">
+                        Loading services...
+                      </div>
+                    ) : services.length === 0 ? (
+                      <div className="px-4 py-3 text-sm text-muted-foreground">
+                        No services available
+                      </div>
+                    ) : (
+                      <>
+                        {services.map((service, index) => (
+                          <motion.div
+                            key={service._id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
+                          >
+                            <Link
+                              to={`/services/${service.slug}`}
+                              className="block px-4 py-3 text-sm text-popover-foreground hover:text-primary transition-colors"
+                              onClick={() => setIsServicesOpen(false)}
+                              data-testid={`link-service-${service.slug}`}
+                            >
+                              {service.title}
+                            </Link>
+                          </motion.div>
+                        ))}
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: services.length * 0.1 }}
+                          whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
+                          className="border-t border-border"
                         >
-                          {service.name}
-                        </Link>
-                      </motion.div>
-                    ))}
+                          <Link
+                            to="/services"
+                            className="block px-4 py-3 text-sm font-semibold text-popover-foreground hover:text-primary transition-colors"
+                            onClick={() => setIsServicesOpen(false)}
+                          >
+                            View All Services
+                          </Link>
+                        </motion.div>
+                      </>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -182,7 +229,7 @@ export default function Navigation() {
               whileTap="tap"
               className="relative"
             >
-              <Link href="/contact" className="block px-4 py-2 rounded-md">
+              <Link to="/contact" className="block px-4 py-2 rounded-md">
                 <span className={`relative ${isActive('/contact') ? 'text-primary font-medium' : 'text-foreground'}`}>
                   Contact
                   {isActive('/contact') && (
@@ -204,7 +251,7 @@ export default function Navigation() {
               whileTap="tap"
               className="relative"
             >
-              <Link href="/aboutus" className="block px-4 py-2 rounded-md">
+              <Link to="/aboutus" className="block px-4 py-2 rounded-md">
                 <span className={`relative ${isActive('/aboutus') ? 'text-primary font-medium' : 'text-foreground'}`}>
                   About
                   {isActive('/aboutus') && (
@@ -264,7 +311,7 @@ export default function Navigation() {
                 transition={{ delay: 0.1 }}
               >
                 <Link 
-                  href="/" 
+                  to="/" 
                   className="block px-4 py-3 text-foreground hover-elevate rounded-md hover:text-primary transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -273,23 +320,49 @@ export default function Navigation() {
               </motion.div>
               
               {/* Services */}
-              {services.map((service, index) => (
+              <div className="border-l-2 border-primary/20 pl-4 ml-4">
+                <p className="px-4 py-2 text-sm font-semibold text-muted-foreground">Services</p>
+                {loading ? (
+                  <div className="px-4 py-2 text-sm text-muted-foreground">
+                    Loading services...
+                  </div>
+                ) : services.length === 0 ? (
+                  <div className="px-4 py-2 text-sm text-muted-foreground">
+                    No services available
+                  </div>
+                ) : (
+                  services.map((service, index) => (
+                    <motion.div
+                      key={service._id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 + (index * 0.05) }}
+                    >
+                      <Link
+                        to={`/services/${service.slug}`}
+                        className="block px-4 py-3 text-foreground hover-elevate rounded-md hover:text-primary transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                        data-testid={`link-mobile-service-${service.slug}`}
+                      >
+                        {service.title}
+                      </Link>
+                    </motion.div>
+                  ))
+                )}
                 <motion.div
-                  key={service.path}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 + (index * 0.05) }}
+                  transition={{ delay: 0.3 }}
                 >
-                  <Link
-                    href={service.path}
-                    className="block px-4 py-3 text-foreground hover-elevate rounded-md hover:text-primary transition-colors"
+                  <Link 
+                    to="/services" 
+                    className="block px-4 py-3 text-foreground hover-elevate rounded-md hover:text-primary transition-colors font-semibold"
                     onClick={() => setIsMenuOpen(false)}
-                    data-testid={`link-mobile-service-${service.name.toLowerCase().replace(' ', '-')}`}
                   >
-                    {service.name}
+                    View All Services
                   </Link>
                 </motion.div>
-              ))}
+              </div>
               
               {/* Contact */}
               <motion.div
@@ -298,7 +371,7 @@ export default function Navigation() {
                 transition={{ delay: 0.3 }}
               >
                 <Link 
-                  href="/contact" 
+                  to="/contact" 
                   className="block px-4 py-3 text-foreground hover-elevate rounded-md hover:text-primary transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -313,7 +386,7 @@ export default function Navigation() {
                 transition={{ delay: 0.35 }}
               >
                 <Link 
-                  href="/aboutus" 
+                  to="/aboutus" 
                   className="block px-4 py-3 text-foreground hover-elevate rounded-md hover:text-primary transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
