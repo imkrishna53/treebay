@@ -63,6 +63,7 @@ router.post('/', upload.single('image'), (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'No image file provided' });
     }
+console.log('ergerggre');
 
     console.log('✅ File upload details:');
     console.log('   📄 Filename:', req.file.filename);
@@ -78,7 +79,7 @@ router.post('/', upload.single('image'), (req, res) => {
     console.log('✅ File verified at path:', req.file.path);
 
     // Return the image URL path
-    const imageUrl = `/uploads/services/${req.file.filename}`;
+    const imageUrl = `uploads/services/${req.file.filename}`;
     
     console.log('🌐 Image URL to return:', imageUrl);
 
