@@ -98,8 +98,8 @@ export default function Footer() {
                 <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-muted-foreground">
-                    1234 Chemical Park Drive<br />
-                    Industrial District, TX 75001
+                    6/299 Vaishnav Khand, Sector -6<br />
+                    Gomti nagar Extension, Lucknow -UP, 226010
                   </p>
                 </div>
               </div>
