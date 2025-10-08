@@ -20,7 +20,8 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 var vite_config_default = defineConfig(async ({ mode }) => {
-  const env = loadEnv(mode, process.cwd());
+  const env = loadEnv(mode, __dirname);
+  console.log("Loaded ENV:", env.VITE_API_BASE_URL);
   const plugins = [
     react(),
     runtimeErrorOverlay()
@@ -31,8 +32,12 @@ var vite_config_default = defineConfig(async ({ mode }) => {
     plugins.push(cartographer(), devBanner());
   }
   return {
+    root: path.resolve(__dirname, "client"),
+    // ✅ Manually define the env variables to make them available in frontend
+    define: {
+      "import.meta.env.VITE_API_BASE_URL": JSON.stringify(env.VITE_API_BASE_URL)
+    },
     plugins,
-    // Return the correct plugins array
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "client", "src"),
@@ -40,17 +45,13 @@ var vite_config_default = defineConfig(async ({ mode }) => {
         "@assets": path.resolve(__dirname, "attached_assets")
       }
     },
-    root: path.resolve(__dirname, "client"),
-    // Make sure your app entry is inside `client/`
     build: {
       outDir: path.resolve(__dirname, "dist")
-      // Correct output directory for Vercel
     },
     server: {
       fs: {
         strict: true,
         deny: ["**/.*"]
-        // Deny access to hidden files (like `.env`)
       }
     }
   };

@@ -1,6 +1,7 @@
 import { Link } from 'wouter';
 import { FlaskConical, Mail, Phone, MapPin, Linkedin, Twitter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import LogoImage from '@/assets/images/logo.png';
 
 const services = [
   { name: 'Ethanol', path: '/services/ethanol' },
@@ -23,9 +24,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center space-x-2">
-              <FlaskConical className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-card-foreground">TreeBay technologies</span>
+            <Link to="/" className="flex items-center space-x-2">
+               <img src={LogoImage}  alt="TreeBay Technologies Logo" className="h-8 w-auto"/>
+              <span className="text-xl font-bold text-foreground">TreeBay Technologies</span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed">
               Leading provider of premium chemical services and sustainable energy solutions. 
@@ -84,13 +85,13 @@ export default function Footer() {
               <div className="flex items-start space-x-2">
                 <Mail className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-muted-foreground">info@treebaytechnologies.com</p>
+                  <p className="text-muted-foreground">connect@treebaytechnology.com</p>
                 </div>
               </div>
               <div className="flex items-start space-x-2">
                 <Phone className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                  <p className="text-muted-foreground">+919871599470</p>
                 </div>
               </div>
               <div className="flex items-start space-x-2">

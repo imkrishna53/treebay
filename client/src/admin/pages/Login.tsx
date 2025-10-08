@@ -8,6 +8,8 @@ import { setToken } from "@/utils/auth";
 import { log } from "console";
 import { useNavigate } from 'react-router-dom';
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+console.log(apiBaseUrl);
+
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

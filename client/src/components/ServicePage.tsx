@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, CheckCircle, Download, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navigation from './Navigation';
+import Footer from './Footer';
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 interface ServiceFeature {
@@ -352,6 +353,7 @@ export default function ServicePage() {
           </div>
         </section>
       </div>
+       <Footer />
     </div>
   );
 }

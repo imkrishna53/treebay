@@ -4,10 +4,12 @@ import path from 'path';
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 
 export default defineConfig(async ({ mode }) => {
-  // Load environment variables from .env files
-  const env = loadEnv(mode, process.cwd());
+  // ✅ Load env vars from the *project root*, even though Vite root is 'client/'
+  const env = loadEnv(mode, __dirname);
 
-  // Base plugin list
+  // Optional: log env to debug
+  console.log('Loaded ENV:', env.VITE_API_BASE_URL);
+
   const plugins = [
     react(),
     runtimeErrorOverlay(),
@@ -21,7 +23,15 @@ export default defineConfig(async ({ mode }) => {
   }
 
   return {
-    plugins: plugins,  // Return the correct plugins array
+    root: path.resolve(__dirname, 'client'),
+
+    // ✅ Manually define the env variables to make them available in frontend
+    define: {
+      'import.meta.env.VITE_API_BASE_URL': JSON.stringify(env.VITE_API_BASE_URL),
+    },
+
+    plugins: plugins,
+
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'client', 'src'),
@@ -29,14 +39,15 @@ export default defineConfig(async ({ mode }) => {
         '@assets': path.resolve(__dirname, 'attached_assets'),
       },
     },
-    root: path.resolve(__dirname, 'client'),  // Make sure your app entry is inside `client/`
+
     build: {
-      outDir: path.resolve(__dirname, 'dist'), // Correct output directory for Vercel
+      outDir: path.resolve(__dirname, 'dist'),
     },
+
     server: {
       fs: {
         strict: true,
-        deny: ['**/.*'],  // Deny access to hidden files (like `.env`)
+        deny: ['**/.*'],
       },
     },
   };

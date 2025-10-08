@@ -27,8 +27,12 @@ app.use(express.json());
 
 
 const allowedOrigins = [
-  'https://treebay1.vercel.app', // Your Vercel frontend
-  'http://localhost:3000', // For local development
+   'https://treebay1.vercel.app', // Your Vercel frontend
+  'http://localhost:5000', // For local development
+  'http://localhost:5173',
+  'https://treebaytechnology.com',
+  'http://treebaytechnology.com'
+
 ];
 
 const corsOptions = {

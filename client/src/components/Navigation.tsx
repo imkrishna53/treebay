@@ -6,7 +6,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link  } from "react-router-dom";
 import { useLocation } from 'wouter';
-
+import LogoImage from '@/assets/images/logo.png';
 // Animation variants (same as before)
 const menuVariants = {
   closed: {
@@ -113,7 +113,7 @@ export default function Navigation() {
             whileTap={{ scale: 0.95 }}
           >
             <Link to="/" className="flex items-center space-x-2 hover-elevate rounded-md px-3 py-2">
-              <FlaskConical className="h-8 w-8 text-primary" />
+               <img src={LogoImage}  alt="TreeBay Technologies Logo" className="h-8 w-auto"/>
               <span className="text-xl font-bold text-foreground">TreeBay Technologies</span>
             </Link>
           </motion.div>
