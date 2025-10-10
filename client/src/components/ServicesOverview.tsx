@@ -6,6 +6,17 @@ import ethanolImage from '@assets/generated_images/Ethanol_production_facility_c
 import isobutanolImage from '@assets/generated_images/Isobutanol_processing_plant_9389e9c0.png';
 import hydrogenImage from '@assets/generated_images/Hydrogen_energy_facility_6f96d236.png';
 import biogasImage from '@assets/generated_images/Biogas_production_facility_18317fab.png';
+import { useEffect, useState } from 'react';
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+
+interface ServiceData {
+  title: string;
+  content: string;
+  image: string;
+  compounds: string[];
+  
+}
 
 const services = [
   {
@@ -61,6 +72,34 @@ const services = [
 ];
 
 export default function ServicesOverview() {
+  const [OurServices, setService] = useState<ServiceData | null>(null);
+useEffect(() => {
+  console.log('ergerg');
+  
+      fetchServiceData();
+  }, []);
+
+const fetchServiceData = async () => {
+    try {
+     // setLoading(true);
+      const response = await fetch(`${apiBaseUrl}/api/our-services/`);
+      console.log('i am in function');;
+      
+      if (!response.ok) {
+        throw new Error('Service not found');
+      }
+      const serviceData = await response.json();
+      console.log(serviceData);
+      console.log('serviceData');
+      setService(serviceData);
+    } catch (err) {
+     // setError(err instanceof Error ? err.message : 'Failed to load service');
+    } finally {
+      //setLoading(false);
+    }
+  };
+
+
   return (
     <section className="py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -80,7 +119,7 @@ export default function ServicesOverview() {
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 mb-12">
-          {services.map((service, index) => (
+          {OurServices && OurServices.map((service, index) => (
             <div
               key={service.title}
               className="animate-fade-in"

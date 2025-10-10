@@ -16,6 +16,8 @@ export default function AdminLayout({ children }) {
         <nav className="flex flex-col space-y-4"> {/* Flex column layout */}
           <Link to="/admin/dashboard">Dashboard</Link>
           <Link to="/admin/services">Services</Link>
+          <Link to="/admin/contact">Queries</Link>
+          <Link to="/admin/our-services">Our Services</Link>
           <button onClick={logout} className="mt-6 text-sm bg-white/10 p-2 rounded">Logout</button>
         </nav>
       </aside>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,14 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Mail, Phone, MapPin, Send, Clock } from 'lucide-react';
-
-const services = [
-  { value: 'ethanol', label: 'Ethanol' },
-  { value: 'isobutanol', label: 'Isobutanol' },
-  { value: 'hydrogen', label: 'Hydrogen Energy' },
-  { value: 'biogas', label: 'Biogas (FAME)' },
-  { value: 'general', label: 'General Inquiry' }
-];
+import axios from 'axios'; 
 
 interface FormData {
   name: string;
@@ -32,6 +25,25 @@ export default function Contact() {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [services, setServices] = useState<{ value: string, label: string }[]>([]);  
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/services');  
+        const serviceOptions = response.data.map((service: { _id: string, title: string }) => ({
+          value: service._id,  
+          label: service.title  
+        }));
+        setServices(serviceOptions);
+      } catch (error) {
+        console.error('Error fetching services:', error);
+        alert('Failed to load services. Please try again later.');
+      }
+    };
+
+    fetchServices();
+  }, []);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -40,14 +52,29 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    console.log('Form submitted:', formData);
-    setTimeout(() => {
+
+   
+    const payload = {
+      name: formData.name,
+      email: formData.email,
+      company: formData.company,
+      serviceInterest: formData.service, 
+      message: formData.message
+    };
+
+    try {
+      
+      const response = await axios.post('http://localhost:5000/api/contact', payload);  
+
       setIsSubmitting(false);
       alert('Thank you! We\'ll get back to you within 24 hours.');
+      
       setFormData({ name: '', email: '', company: '', service: '', message: '' });
-    }, 2000);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setIsSubmitting(false);
+      alert('Something went wrong. Please try again later.');
+    }
   };
 
   return (

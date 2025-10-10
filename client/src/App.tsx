@@ -17,6 +17,10 @@ import ServicePage from "./components/ServicePage";
 import ServicesList from "./components/ServicesList";
 import ServicesListAdmin from "./admin/pages/ServicesListAdmin";
 import CreateService from "./admin/pages/CreateService";
+import Query from "./admin/pages/Contact";
+import CreateOurServices from "./admin/pages/CreateOurServices";
+import NewOurServices from "./admin/pages/NewOurServices";
+
 function Router() {
 
 return (
@@ -37,6 +41,9 @@ return (
 <Route path="/admin/services" element={<ServicesListAdmin />} />
 <Route path="/admin/services/new" element={<CreateService />} />
 <Route path="/admin/services/edit/:id" element={<EditService />} />
+<Route path="/admin/contact" element={<Query />} />
+<Route path="/admin/create/our-services" element={< CreateOurServices/>} />
+<Route path="/admin/our-services" element={< NewOurServices/>} />
 
     {/* 404 fallback */}
     <Route path="*" element={<NotFound />} />

@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { Link } from 'wouter';
+import { useEffect, useState } from 'react';
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 interface ServiceCardProps {
   title: string;
@@ -21,12 +23,20 @@ export default function ServiceCard({
   path, 
   badge 
 }: ServiceCardProps) {
+  
+  const [baseUrl, setApiBaseUrl] = useState('');
+  useEffect(() => 
+    {
+setApiBaseUrl(apiBaseUrl + '/' + image);
+    }
+  
+, []);
   return (
     <Card className="group hover-elevate transition-all duration-300 overflow-hidden">
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
         <img 
-          src={image} 
+          src={baseUrl}
           alt={`${title} facility`}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
@@ -52,7 +62,7 @@ export default function ServiceCard({
       <CardContent className="space-y-4">
         {/* Features */}
         <div className="space-y-2">
-          {features.slice(0, 3).map((feature, index) => (
+          {features && features.slice(0, 3).map((feature, index) => (
             <div key={index} className="flex items-center space-x-2 text-sm">
               <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
               <span className="text-muted-foreground">{feature}</span>

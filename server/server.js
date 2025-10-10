@@ -10,7 +10,8 @@ import fs from 'fs';
 import authRoutes from "./routes/auth.js";
 import servicesRoutes from "./routes/services.js";
 import uploadRoutes from "./routes/upload.js";
-
+import contactRoutes from "./routes/contact.js";
+import OurServicesRoutes from './routes/ourServices.js'; 
 
 
 // Fix for __dirname in ES modules
@@ -83,6 +84,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 app.use("/api/auth", authRoutes);
 app.use("/api/services", servicesRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/our-services', OurServicesRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
