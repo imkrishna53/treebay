@@ -7,6 +7,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const API_URL = `${apiBaseUrl}/api/services`;
 const UPLOAD_API_URL = `${apiBaseUrl}/api/upload`; // You'll need to create this endpoint
 
+
 export default function CreateService() {
   // In both CreateService.jsx and EditService.jsx
 //const UPLOAD_API_URL = '/api/upload'; // Use relative path if using proxy

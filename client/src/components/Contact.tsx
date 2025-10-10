@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Mail, Phone, MapPin, Send, Clock } from 'lucide-react';
 import axios from 'axios'; 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 interface FormData {
   name: string;
@@ -30,7 +31,7 @@ export default function Contact() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/services');  
+        const response = await axios.get(`${apiBaseUrl}/api/services`);  
         const serviceOptions = response.data.map((service: { _id: string, title: string }) => ({
           value: service._id,  
           label: service.title  
@@ -64,7 +65,7 @@ export default function Contact() {
 
     try {
       
-      const response = await axios.post('http://localhost:5000/api/contact', payload);  
+      const response = await axios.post(`${apiBaseUrl}/api/contact`, payload);  
 
       setIsSubmitting(false);
       alert('Thank you! We\'ll get back to you within 24 hours.');

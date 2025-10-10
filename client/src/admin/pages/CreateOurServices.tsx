@@ -3,6 +3,7 @@ import AdminLayout from "../components/AdminLayout";
 import { Link } from "react-router-dom";
 import { Plus } from 'lucide-react';
 import Swal from 'sweetalert2';  // Import SweetAlert
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 export default function CreateOurServices() {
   const [newService, setNewService] = useState({
@@ -93,7 +94,7 @@ export default function CreateOurServices() {
       formData.append("image", image);
 
       try {
-        const imageResponse = await fetch("http://localhost:5000/api/upload", {
+        const imageResponse = await fetch(`${apiBaseUrl}/api/upload`, {
           method: "POST",
           body: formData,
         });
@@ -113,7 +114,7 @@ export default function CreateOurServices() {
     const serviceData = { ...newService, image: imageUrl || newService.image };
 
     try {
-      const response = await fetch("http://localhost:5000/api/our-services", {
+      const response = await fetch(`${apiBaseUrl}/api/our-services`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

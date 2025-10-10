@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import AdminLayout from "../components/AdminLayout";
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 export default function Query() {
   const [queries, setQueries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,7 +11,7 @@ export default function Query() {
   useEffect(() => {
     const fetchQueries = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/contact");
+        const response = await fetch(`${apiBaseUrl}/api/contact`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch contacts");

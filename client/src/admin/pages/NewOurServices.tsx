@@ -17,11 +17,12 @@ export default function NewOurServices() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentServiceId, setCurrentServiceId] = useState(null);
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
   // Fetch all services from the API
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/our-services");
+        const response = await fetch(`${apiBaseUrl}/api/our-services`);
         if (!response.ok) {
           throw new Error("Failed to fetch services");
         }
@@ -92,8 +93,8 @@ export default function NewOurServices() {
     try {
       const serviceData = { ...newService };
       const url = isEditMode
-        ? `http://localhost:5000/api/our-services/${currentServiceId}` // Update URL
-        : "http://localhost:5000/api/our-services"; // Create URL
+        ? `${apiBaseUrl}/api/our-services/${currentServiceId}` // Update URL
+        : `${apiBaseUrl}/api/our-services`; // Create URL
       const method = isEditMode ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -140,7 +141,7 @@ export default function NewOurServices() {
   // Handle deleting a service
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/our-services/${id}`, {
+      const response = await fetch(`${apiBaseUrl}/api/our-services/${id}`, {
         method: "DELETE",
       });
 
@@ -175,7 +176,7 @@ export default function NewOurServices() {
           {services.map((service) => (
             <div key={service.id} className="bg-white shadow-lg rounded-lg p-4">
               <img
-                src={`http://localhost:5000/${service.serviceImage}`} // Correct image URL
+                src={`${apiBaseUrl}/${service.serviceImage}`} // Correct image URL
                 alt={service.title}
                 className="h-40 w-full object-cover rounded-lg mb-4"
               />
