@@ -7,7 +7,7 @@ export default function NewOurServices() {
   const [newService, setNewService] = useState({
     title: "",
     description: "",
-    serviceImage: "",
+    image: "",
     features: [""], // Ensure there's at least one feature
     path: "",
     badge: "",
@@ -119,7 +119,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
       setNewService({
         title: "",
         description: "",
-        serviceImage: "",
+        image: "",
         features: [""], // Reset the features input
         path: "",
         badge: "",
@@ -176,7 +176,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
           {services.map((service) => (
             <div key={service.id} className="bg-white shadow-lg rounded-lg p-4">
               <img
-                src={`${apiBaseUrl}/${service.serviceImage}`} // Correct image URL
+                src={`${apiBaseUrl}/${service.image}`} // Correct image URL
                 alt={service.title}
                 className="h-40 w-full object-cover rounded-lg mb-4"
               />
