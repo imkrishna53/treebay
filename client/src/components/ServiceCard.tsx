@@ -24,13 +24,7 @@ export default function ServiceCard({
   badge 
 }: ServiceCardProps) {
   
-  const [baseUrl, setApiBaseUrl] = useState('');
-  useEffect(() => 
-    {
-setApiBaseUrl(apiBaseUrl + '/' + image);
-    }
-  
-, []);
+const baseUrl = apiBaseUrl + '/' + image;
   return (
     <Card className="group hover-elevate transition-all duration-300 overflow-hidden">
       {/* Image */}
