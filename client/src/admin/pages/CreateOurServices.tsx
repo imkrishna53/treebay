@@ -10,7 +10,7 @@ export default function CreateOurServices() {
   const [newService, setNewService] = useState({
     title: "",
     description: "",
-    image: null, // Store File object, not string
+    image: null, // Store File object instead of string
     features: [""], // Start with one empty feature
     path: "",
     badge: "",
@@ -57,12 +57,13 @@ export default function CreateOurServices() {
     }
   };
 
-  // Handle image file change - CORRECTED
+  // Handle image file change
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    console.log("Selected file:", file);
     
     if (file) {
-      // ✅ Store the File object in state
+      // Store the File object directly
       setNewService((prev) => ({
         ...prev,
         image: file,
@@ -92,38 +93,43 @@ export default function CreateOurServices() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submission - CORRECTED
+  // Handle form submission - USING FORMDATA FOR EVERYTHING
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsSubmitting(true);
 
     try {
-      // ✅ Use FormData instead of JSON for file upload
+      // ✅ Create ONE FormData and append ALL fields
       const formData = new FormData();
       
-      // Append all fields to FormData
+      // Append text fields
       formData.append("title", newService.title);
       formData.append("description", newService.description);
       formData.append("path", newService.path);
       formData.append("badge", newService.badge);
       
-      // Append features as array
+      // Append features array
       newService.features.forEach((feature, index) => {
         if (feature.trim() !== "") {
           formData.append(`features[${index}]`, feature);
         }
       });
       
-      // ✅ Append the File object directly
+      // ✅ Append the image file directly
       formData.append("image", newService.image);
 
+      console.log("Sending FormData with fields:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+
+      // ✅ Send ONE request with FormData - NO Content-Type header!
       const response = await fetch(`${apiBaseUrl}/api/our-services`, {
         method: "POST",
-        body: formData, // ✅ Let browser set Content-Type to multipart/form-data
-        // Don't set Content-Type header manually!
+        body: formData, // Let browser set Content-Type automatically
       });
 
       if (response.ok) {
