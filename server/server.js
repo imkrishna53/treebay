@@ -33,8 +33,7 @@ const allowedOrigins = [
    'https://treebay1.vercel.app', // Your Vercel frontend
   'http://localhost:5000', // For local development
   'http://localhost:5173',
-  'https://treebaytechnology.com',
-  'http://treebaytechnology.com'
+  'https://treebaytechnology.com'
 
 ];
 
