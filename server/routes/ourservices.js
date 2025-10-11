@@ -1,3 +1,5 @@
+// routes/ourservices.js
+
 import express from 'express';
 import OurService from '../models/OurServices.js';
 
@@ -11,86 +13,78 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-// Get the absolute path to uploads directory - FIX THIS LINE
-const uploadsDir = path.join(process.cwd(), 'uploads', 'services'); // Use process.cwd() instead
+// ✅ Path to uploads/services
+const uploadsDir = path.join(process.cwd(), 'uploads', 'services');
 
-console.log('📁 Upload directory setup:');
-console.log('   📍 __dirname:', __dirname);
-console.log('   📍 process.cwd():', process.cwd());
-console.log('   📁 Uploads directory:', uploadsDir);
-
-// Ensure uploads directory exists
+// ✅ Ensure uploads directory exists
 if (!fs.existsSync(uploadsDir)) {
-  console.log('⚠️  Creating uploads directory...');
   fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log('✅ Created uploads directory:', uploadsDir);
 }
 
+// ✅ Multer storage config
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    console.log('💾 Saving file to:', uploadsDir);
     cb(null, uploadsDir);
   },
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const fileExtension = path.extname(file.originalname);
-    const filename = 'service-' + uniqueSuffix + fileExtension;
-    console.log('📄 Generated filename:', filename);
-    cb(null, filename);
+    cb(null, `service-${uniqueSuffix}${fileExtension}`);
   }
 });
 
 const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  },
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: function (req, file, cb) {
     const allowedTypes = /jpeg|jpg|png|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-      return cb(null, true);
+    const isValidExt = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const isValidMime = allowedTypes.test(file.mimetype);
+    if (isValidExt && isValidMime) {
+      cb(null, true);
     } else {
-      cb(new Error('Only image files (JPEG, PNG, WebP) are allowed!'), false);
+      cb(new Error('Only JPEG, PNG, or WebP images are allowed.'));
     }
   }
 });
 
-// Create a new service
+// ✅ Create a new service with image
 router.post('/', upload.single('image'), async (req, res) => {
-  console.log('Request body:', req.body); 
-
   try {
-    const { title, description, image, features, path, badge } = req.body;
+    const { title, description, features, path: routePath, badge } = req.body;
 
-    if (!title || !description || !image || !path || !badge) {
-      return res.status(400).json({ message: 'All required fields must be provided' });
+    if (!req.file) {
+      return res.status(400).json({ message: 'Image file is required' });
     }
+
+    if (!title || !description || !routePath) {
+      return res.status(400).json({ message: 'Title, description, and path are required' });
+    }
+
+    const imagePath = `uploads/services/${req.file.filename}`;
 
     const newService = new OurService({
       title,
       description,
-      image,
-      features: features || [],
-      path,
-      badge,
+      image: imagePath,
+      features: features ? JSON.parse(features) : [],
+      path: routePath,
+      badge
     });
 
     await newService.save();
 
     res.status(201).json({
       message: 'Service created successfully',
-      service: newService,
+      service: newService
     });
   } catch (error) {
-    console.error('Error creating service:', error);
+    console.error('❌ Error creating service:', error);
     res.status(500).json({ message: 'Error creating service', error: error.message });
   }
 });
 
-// Get all services
+// ✅ Get all services
 router.get('/', async (req, res) => {
   try {
     const services = await OurService.find();
@@ -101,17 +95,15 @@ router.get('/', async (req, res) => {
 
     res.status(200).json(services);
   } catch (error) {
-    console.error('Error fetching services:', error);
+    console.error('❌ Error fetching services:', error);
     res.status(500).json({ message: 'Error fetching services', error: error.message });
   }
 });
 
-// Get a single service by ID
+// ✅ Get single service
 router.get('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const service = await OurService.findById(id);
+    const service = await OurService.findById(req.params.id);
 
     if (!service) {
       return res.status(404).json({ message: 'Service not found' });
@@ -119,50 +111,45 @@ router.get('/:id', async (req, res) => {
 
     res.status(200).json(service);
   } catch (error) {
-    console.error('Error fetching service:', error);
+    console.error('❌ Error fetching service:', error);
     res.status(500).json({ message: 'Error fetching service', error: error.message });
   }
 });
 
-// Update a service by ID
-router.put('/:id', async (req, res) => {
+// ✅ Update service
+router.put('/:id', upload.single('image'), async (req, res) => {
   try {
-    const { id } = req.params;
-    const { title, description, image, features, path, badge } = req.body;
+    const { title, description, features, path: routePath, badge } = req.body;
 
-    const updatedService = await OurService.findByIdAndUpdate(
-      id,
-      {
-        title,
-        description,
-        image,
-        features: features || [],
-        path,
-        badge,
-      },
-      { new: true } 
-    );
+    const updatedData = {
+      title,
+      description,
+      path: routePath,
+      badge,
+      features: features ? JSON.parse(features) : []
+    };
+
+    if (req.file) {
+      updatedData.image = `uploads/services/${req.file.filename}`;
+    }
+
+    const updatedService = await OurService.findByIdAndUpdate(req.params.id, updatedData, { new: true });
 
     if (!updatedService) {
       return res.status(404).json({ message: 'Service not found' });
     }
 
-    res.status(200).json({
-      message: 'Service updated successfully',
-      service: updatedService,
-    });
+    res.status(200).json({ message: 'Service updated successfully', service: updatedService });
   } catch (error) {
-    console.error('Error updating service:', error);
+    console.error('❌ Error updating service:', error);
     res.status(500).json({ message: 'Error updating service', error: error.message });
   }
 });
 
-// Delete a service by ID
+// ✅ Delete service
 router.delete('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const deletedService = await OurService.findByIdAndDelete(id);
+    const deletedService = await OurService.findByIdAndDelete(req.params.id);
 
     if (!deletedService) {
       return res.status(404).json({ message: 'Service not found' });
@@ -170,7 +157,7 @@ router.delete('/:id', async (req, res) => {
 
     res.status(200).json({ message: 'Service deleted successfully' });
   } catch (error) {
-    console.error('Error deleting service:', error);
+    console.error('❌ Error deleting service:', error);
     res.status(500).json({ message: 'Error deleting service', error: error.message });
   }
 });
