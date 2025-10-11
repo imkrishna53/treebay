@@ -70,10 +70,12 @@ export default function EditService() {
     setService({ ...service, [e.target.name]: e.target.value });
   };
 
-  // Image Upload Handler - FIXED
+  // Image Upload Handler - CORRECTED VERSION
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    console.log("📁 Selected file:", file);
 
     // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -95,22 +97,29 @@ export default function EditService() {
       const formData = new FormData();
       formData.append('image', file);
 
-      const response = await axios.post(`${UPLOAD_API_URL}/`, formData, {
+      const response = await axios.post(UPLOAD_API_URL, formData, {
         headers: {
           ...authHeader(),
           'Content-Type': 'multipart/form-data'
         }
       });
 
-      // The server should return the full image URL
-      const imageUrl = response.data.imageUrl || response.data.url;
+      console.log("📁 Server response:", response.data);
       
-      if (imageUrl) {
-        setService({ ...service, image: `${apiBaseUrl}/${imageUrl}` });
-        setImagePreview(imageUrl);
-      } else {
-        throw new Error("No image URL returned from server");
-      }
+      // ✅ FIX: Create preview from the File object immediately
+      const previewUrl = URL.createObjectURL(file);
+      console.log("📁 Preview URL created:", previewUrl);
+      setImagePreview(previewUrl);
+      
+      // ✅ FIX: Set the service image to the URL returned from server
+      // Don't prepend apiBaseUrl - the server should return the full path
+      const imageUrl = response.data.imageUrl || response.data.url;
+      console.log("📁 Setting service image to:", imageUrl);
+      
+      setService(prev => ({ 
+        ...prev, 
+        image: imageUrl 
+      }));
       
     } catch (err) {
       console.error("Upload error:", err);
@@ -122,11 +131,11 @@ export default function EditService() {
 
   // Remove image
   const handleRemoveImage = () => {
-    setService({ ...service, image: "" });
+    setService(prev => ({ ...prev, image: "" }));
     setImagePreview("");
   };
 
-  // Key Features Methods - FIXED
+  // Key Features Methods
   const handleKeyFeatureChange = (index, field, value) => {
     const newKeyFeatures = [...service.keyFeatures];
     newKeyFeatures[index] = {
@@ -148,7 +157,7 @@ export default function EditService() {
     setService({ ...service, keyFeatures: newKeyFeatures });
   };
 
-  // Applications Methods - FIXED
+  // Applications Methods
   const handleApplicationChange = (index, field, value) => {
     const newApplications = [...service.applications];
     newApplications[index] = {
@@ -193,7 +202,7 @@ export default function EditService() {
     setService({ ...service, applications: newApplications });
   };
 
-  // Technical Specifications Methods - FIXED
+  // Technical Specifications Methods
   const handleSpecChange = (index, field, value) => {
     const newSpecs = [...service.technicalSpecifications];
     newSpecs[index] = {
@@ -215,7 +224,7 @@ export default function EditService() {
     setService({ ...service, technicalSpecifications: newSpecs });
   };
 
-  // Why Choose Us Methods - FIXED
+  // Why Choose Us Methods
   const handleWhyChooseUsChange = (index, value) => {
     const newWhyChooseUs = [...service.whyChooseUs];
     newWhyChooseUs[index] = value;
@@ -273,8 +282,8 @@ export default function EditService() {
         <div className="p-6 max-w-4xl mx-auto">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-4 text-muted-foreground">Loading service...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading service...</p>
             </div>
           </div>
         </div>
@@ -286,24 +295,24 @@ export default function EditService() {
     <AdminLayout>
       <div className="p-6 max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Edit Service</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Edit Service</h1>
           <button 
             onClick={() => navigate("/admin/services")}
-            className="px-4 py-2 text-sm border rounded hover:bg-gray-50"
+            className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
           >
             Back to Services
           </button>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-700">{error}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic Information */}
-          <div className="bg-white border rounded-lg p-6">
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
             <h2 className="text-lg font-semibold mb-4 text-gray-900">Basic Information</h2>
             <div className="space-y-4">
               <div>
@@ -351,7 +360,7 @@ export default function EditService() {
                 />
               </div>
 
-              {/* IMAGE UPLOAD SECTION */}
+              {/* IMAGE UPLOAD SECTION - CORRECTED */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Service Image
@@ -363,18 +372,21 @@ export default function EditService() {
                     <p className="text-sm text-gray-600 mb-2">Image Preview:</p>
                     <div className="relative inline-block">
                       <img 
-                        src=  {imagePreview} 
+                        src={imagePreview} 
                         alt="Service preview" 
                         className="h-32 w-32 object-cover rounded-lg border-2 border-gray-300"
                         onError={(e) => {
-                          console.error("Image failed to load:", imagePreview);
+                          console.error("❌ Image failed to load:", imagePreview);
                           e.target.style.display = 'none';
+                        }}
+                        onLoad={(e) => {
+                          console.log("✅ Image loaded successfully:", imagePreview);
                         }}
                       />
                       <button
                         type="button"
                         onClick={handleRemoveImage}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors text-sm"
                       >
                         ×
                       </button>
@@ -424,7 +436,7 @@ export default function EditService() {
           </div>
 
           {/* Key Features & Benefits */}
-          <div className="bg-white border rounded-lg p-6">
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
             <h2 className="text-lg font-semibold mb-4 text-gray-900">Key Features & Benefits</h2>
             
             <div className="mb-6">
@@ -443,13 +455,13 @@ export default function EditService() {
 
             <div className="space-y-4 mb-4">
               {service.keyFeatures.map((feature, index) => (
-                <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="font-medium text-gray-900">Feature {index + 1}</h3>
                     <button
                       type="button"
                       onClick={() => removeKeyFeature(index)}
-                      className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                      className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                     >
                       Remove
                     </button>
@@ -478,14 +490,14 @@ export default function EditService() {
             <button
               type="button"
               onClick={addKeyFeature}
-              className="w-full py-2 border-2 border-dashed border-gray-300 rounded-md text-gray-500 hover:text-gray-700 hover:border-gray-400"
+              className="w-full py-3 border-2 border-dashed border-gray-300 rounded-md text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-colors"
             >
               + Add Feature Section
             </button>
           </div>
 
           {/* Applications & Industries */}
-          <div className="bg-white border rounded-lg p-6">
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
             <h2 className="text-lg font-semibold mb-4 text-gray-900">Applications & Industries</h2>
             
             <div className="mb-6">
@@ -504,13 +516,13 @@ export default function EditService() {
 
             <div className="space-y-4 mb-4">
               {service.applications.map((app, index) => (
-                <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="font-medium text-gray-900">Application {index + 1}</h3>
                     <button
                       type="button"
                       onClick={() => removeApplication(index)}
-                      className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                      className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                     >
                       Remove
                     </button>
@@ -548,7 +560,7 @@ export default function EditService() {
                           <button
                             type="button"
                             onClick={() => removeApplicationFeature(index, featureIndex)}
-                            className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                            className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                           >
                             Remove
                           </button>
@@ -558,7 +570,7 @@ export default function EditService() {
                     <button
                       type="button"
                       onClick={() => addApplicationFeature(index)}
-                      className="px-3 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
+                      className="px-3 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300 transition-colors"
                     >
                       + Add Feature Item
                     </button>
@@ -570,14 +582,14 @@ export default function EditService() {
             <button
               type="button"
               onClick={addApplication}
-              className="w-full py-2 border-2 border-dashed border-gray-300 rounded-md text-gray-500 hover:text-gray-700 hover:border-gray-400"
+              className="w-full py-3 border-2 border-dashed border-gray-300 rounded-md text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-colors"
             >
               + Add Application
             </button>
           </div>
 
           {/* Technical Specifications */}
-          <div className="bg-white border rounded-lg p-6">
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
             <h2 className="text-lg font-semibold mb-4 text-gray-900">Technical Specifications</h2>
             
             <div className="space-y-3 mb-4">
@@ -600,7 +612,7 @@ export default function EditService() {
                   <button
                     type="button"
                     onClick={() => removeSpec(index)}
-                    className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                   >
                     Remove
                   </button>
@@ -611,14 +623,14 @@ export default function EditService() {
             <button
               type="button"
               onClick={addSpec}
-              className="w-full py-2 border-2 border-dashed border-gray-300 rounded-md text-gray-500 hover:text-gray-700 hover:border-gray-400"
+              className="w-full py-3 border-2 border-dashed border-gray-300 rounded-md text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-colors"
             >
               + Add Specification
             </button>
           </div>
 
           {/* Why Choose Us */}
-          <div className="bg-white border rounded-lg p-6">
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
             <h2 className="text-lg font-semibold mb-4 text-gray-900">Why Choose Us</h2>
             
             <div className="space-y-3 mb-4">
@@ -634,7 +646,7 @@ export default function EditService() {
                   <button
                     type="button"
                     onClick={() => removeWhyChooseUs(index)}
-                    className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                   >
                     Remove
                   </button>
@@ -645,28 +657,28 @@ export default function EditService() {
             <button
               type="button"
               onClick={addWhyChooseUs}
-              className="w-full py-2 border-2 border-dashed border-gray-300 rounded-md text-gray-500 hover:text-gray-700 hover:border-gray-400"
+              className="w-full py-3 border-2 border-dashed border-gray-300 rounded-md text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-colors"
             >
               + Add Reason
             </button>
           </div>
 
           {/* Submit Buttons */}
-          <div className="flex gap-3 pt-6 border-t">
+          <div className="flex gap-3 pt-6 border-t border-gray-200">
             <button 
               type="button" 
               onClick={() => navigate("/admin/services")}
-              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="px-6 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
               disabled={saving || uploading}
             >
               Cancel
             </button>
             <button 
               type="submit" 
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
               disabled={saving || uploading}
             >
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? "Saving Changes..." : "Save Changes"}
             </button>
           </div>
         </form>
