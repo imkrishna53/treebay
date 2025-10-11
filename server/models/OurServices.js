@@ -1,42 +1,35 @@
 import mongoose from 'mongoose';
 
-const ourServiceSchema = new mongoose.Schema({
+const OurServiceSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: [true, 'Title is required'],
-    trim: true
+    required: true,
+    trim: true,
   },
   description: {
     type: String,
-    required: [true, 'Description is required'],
-    trim: true
+    required: true,
   },
   image: {
-    type: String,
-    required: [true, 'Image path is required']
-  },
-  features: [{
-    type: String,
+    type: String, // stored path to image, e.g. "uploads/services/service-...png"
     required: true,
-    trim: true
-  }],
+  },
+  features: {
+    type: [String], // array of feature strings
+    default: [],
+  },
   path: {
     type: String,
-    required: [true, 'Path is required'],
+    required: true,
     trim: true,
-    unique: true
   },
   badge: {
     type: String,
-    required: [true, 'Badge is required'],
-    trim: true
-  }
+    required: true,
+    trim: true,
+  },
 }, {
-  timestamps: true
+  timestamps: true, // optional: adds createdAt and updatedAt fields
 });
 
-// Index for better performance
-ourServiceSchema.index({ path: 1 });
-ourServiceSchema.index({ createdAt: -1 });
-
-export default mongoose.model('OurService', ourServiceSchema);
+export default mongoose.model('OurService', OurServiceSchema);
