@@ -11,7 +11,7 @@ import authRoutes from "./routes/auth.js";
 import servicesRoutes from "./routes/services.js";
 import uploadRoutes from "./routes/upload.js";
 import contactRoutes from "./routes/contact.js";
-import OurServicesRoutes from './routes/ourServices.js'; 
+import OurServicesRoutes from './routes/ourservices.js'; 
 
 
 // Fix for __dirname in ES modules
@@ -24,7 +24,9 @@ connectDB();
 const app = express();
 app.use(helmet());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+// ✅ Serve /uploads statically
 
 
 const allowedOrigins = [

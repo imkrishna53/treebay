@@ -7,8 +7,8 @@ export default function NewOurServices() {
   const [newService, setNewService] = useState({
     title: "",
     description: "",
-    image: "",
-    features: [""], // Ensure there's at least one feature
+    image: null,
+    features: [""],
     path: "",
     badge: "",
   });
@@ -16,16 +16,14 @@ export default function NewOurServices() {
   const [errors, setErrors] = useState({});
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentServiceId, setCurrentServiceId] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-  // Fetch all services from the API
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
   useEffect(() => {
     const fetchServices = async () => {
       try {
         const response = await fetch(`${apiBaseUrl}/api/our-services`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch services");
-        }
         const data = await response.json();
         setServices(data);
       } catch (error) {
@@ -35,7 +33,6 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
     fetchServices();
   }, []);
 
-  // Handle input change for both adding and editing
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewService((prev) => ({
@@ -44,7 +41,6 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
     }));
   };
 
-  // Handle feature change dynamically
   const handleFeatureChange = (e, index) => {
     const updatedFeatures = [...newService.features];
     updatedFeatures[index] = e.target.value;
@@ -54,7 +50,6 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
     }));
   };
 
-  // Add a new feature input
   const handleAddFeature = () => {
     setNewService((prev) => ({
       ...prev,
@@ -62,7 +57,6 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
     }));
   };
 
-  // Remove a feature input
   const handleRemoveFeature = (index) => {
     const updatedFeatures = newService.features.filter((_, i) => i !== index);
     setNewService((prev) => ({
@@ -71,7 +65,17 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
     }));
   };
 
-  // Validation function for form inputs
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setNewService((prev) => ({
+      ...prev,
+      image: file,
+    }));
+    if (file) {
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
     if (!newService.title) newErrors.title = "Title is required.";
@@ -81,73 +85,91 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
     if (newService.features.some((feature) => !feature.trim())) {
       newErrors.features = "All features must be filled.";
     }
+    if (!isEditMode && !newService.image) newErrors.image = "Image file is required.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle adding or updating a service
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     try {
-      const serviceData = { ...newService };
+      const formData = new FormData();
+      formData.append("title", newService.title);
+      formData.append("description", newService.description);
+      formData.append("path", newService.path);
+      formData.append("badge", newService.badge);
+      newService.features.forEach((feature, index) => {
+        formData.append(`features[${index}]`, feature);
+      });
+
+      if (newService.image instanceof File) {
+        formData.append("image", newService.image);
+      }
+
       const url = isEditMode
-        ? `${apiBaseUrl}/api/our-services/${currentServiceId}` // Update URL
-        : `${apiBaseUrl}/api/our-services`; // Create URL
+        ? `${apiBaseUrl}/api/our-services/${currentServiceId}`
+        : `${apiBaseUrl}/api/our-services`;
+
       const method = isEditMode ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(serviceData),
+        body: formData,
       });
 
       if (!response.ok) {
-        throw new Error(isEditMode ? "Failed to update service" : "Failed to create service");
+        throw new Error("Failed to submit service");
       }
 
       const data = await response.json();
       setServices((prev) =>
         isEditMode
-          ? prev.map((service) => (service.id === currentServiceId ? data : service))
-          : [data, ...prev]
+          ? prev.map((service) =>
+              service._id === currentServiceId ? data.service : service
+            )
+          : [data.service, ...prev]
       );
 
       setNewService({
         title: "",
         description: "",
-        image: "",
-        features: [""], // Reset the features input
+        image: null,
+        features: [""],
         path: "",
         badge: "",
       });
+      setPreviewImage(null);
       setErrors({});
       setIsEditMode(false);
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error("Error submitting service:", error);
     }
   };
 
-  // Handle editing a service
   const handleEdit = (service) => {
     setIsEditMode(true);
-    setCurrentServiceId(service.id);
-    setNewService({ ...service, features: service.features || [""] }); // Ensure features are always initialized
+    setCurrentServiceId(service._id);
+    setNewService({
+      title: service.title,
+      description: service.description,
+      features: service.features || [""],
+      image: service.image,
+      path: service.path,
+      badge: service.badge,
+    });
+    setPreviewImage(`${apiBaseUrl}/${service.image}`);
   };
 
-  // Handle deleting a service
   const handleDelete = async (id) => {
     try {
       const response = await fetch(`${apiBaseUrl}/api/our-services/${id}`, {
         method: "DELETE",
       });
-
       if (!response.ok) throw new Error("Failed to delete service");
 
-      setServices((prev) => prev.filter((service) => service.id !== id));
+      setServices((prev) => prev.filter((s) => s._id !== id));
     } catch (error) {
       console.error("Error deleting service:", error);
     }
@@ -156,155 +178,140 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
   return (
     <AdminLayout>
       <div className="p-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-center sm:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Manage Services</h1>
-            <p className="text-gray-600 mt-1">View, edit, or delete services</p>
-          </div>
-
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Manage Services</h1>
           <Link to="/admin/create/our-services">
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded">
               <Plus className="h-4 w-4" />
-              Add New Service
+              Add Service
             </button>
           </Link>
         </div>
 
-        {/* Service Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {services.map((service) => (
-            <div key={service.id} className="bg-white shadow-lg rounded-lg p-4">
+            <div key={service._id} className="bg-white rounded shadow p-4">
               <img
-                src={`${apiBaseUrl}/${service.image}`} // Correct image URL
+                src={`${apiBaseUrl}/${service.image}`}
                 alt={service.title}
-                className="h-40 w-full object-cover rounded-lg mb-4"
+                className="w-full h-40 object-cover rounded mb-3"
               />
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">{service.title}</h3>
-              <p className="text-sm text-gray-600 mb-2">{service.description}</p>
-              <div className="flex justify-between items-center mt-4">
+              <h2 className="text-lg font-semibold">{service.title}</h2>
+              <p className="text-sm text-gray-600 mb-3">{service.description}</p>
+              <div className="flex justify-between">
                 <button
                   onClick={() => handleEdit(service)}
-                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                  className="bg-yellow-500 px-4 py-2 rounded text-white"
                 >
                   <Edit className="h-4 w-4" />
-                  Edit
                 </button>
                 <button
-                  onClick={() => handleDelete(service.id)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  onClick={() => handleDelete(service._id)}
+                  className="bg-red-600 px-4 py-2 rounded text-white"
                 >
                   <Trash2 className="h-4 w-4" />
-                  Delete
                 </button>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Create/Update Service Form */}
-        {isEditMode && (
-          <div className="bg-white shadow-lg rounded-lg p-6 mt-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Edit Service</h2>
-            <form onSubmit={handleSubmit}>
-              {/* Title Input */}
-              <div className="mb-4">
-                <label className="block text-gray-700">Title</label>
-                <input
-                  type="text"
-                  name="title"
-                  value={newService.title}
-                  onChange={handleInputChange}
-                  className="w-full sm:w-2/3 lg:w-1/2 px-4 py-2 border border-gray-300 rounded-lg"
-                  required
-                />
-                {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
-              </div>
+        <div className="bg-white rounded shadow p-6">
+          <h2 className="text-xl font-bold mb-4">
+            {isEditMode ? "Edit Service" : "Create Service"}
+          </h2>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label className="block mb-1 font-medium">Title</label>
+              <input
+                type="text"
+                name="title"
+                value={newService.title}
+                onChange={handleInputChange}
+                className="w-full border px-4 py-2 rounded"
+              />
+              {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
+            </div>
 
-              {/* Description Input */}
-              <div className="mb-4">
-                <label className="block text-gray-700">Description</label>
-                <textarea
-                  name="description"
-                  value={newService.description}
-                  onChange={handleInputChange}
-                  className="w-full sm:w-2/3 lg:w-1/2 px-4 py-2 border border-gray-300 rounded-lg"
-                  required
-                />
-                {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
-              </div>
+            <div className="mb-4">
+              <label className="block mb-1 font-medium">Description</label>
+              <textarea
+                name="description"
+                value={newService.description}
+                onChange={handleInputChange}
+                className="w-full border px-4 py-2 rounded"
+              />
+              {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
+            </div>
 
-              {/* Features Input */}
-              <div className="mb-4">
-                <label className="block text-gray-700">Features</label>
-                {newService.features.map((feature, index) => (
-                  <div key={index} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      value={feature}
-                      onChange={(e) => handleFeatureChange(e, index)}
-                      className="w-full sm:w-2/3 lg:w-1/3 px-4 py-2 border border-gray-300 rounded-lg"
-                      placeholder={`Feature ${index + 1}`}
-                    />
-                    {newService.features.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveFeature(index)}
-                        className="text-red-500"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleAddFeature}
-                  className="text-blue-600"
-                >
-                  Add Feature
-                </button>
-                {errors.features && <p className="text-red-500 text-sm">{errors.features}</p>}
-              </div>
-
-              {/* Path Input */}
-              <div className="mb-4">
-                <label className="block text-gray-700">Path</label>
-                <input
-                  type="text"
-                  name="path"
-                  value={newService.path}
-                  onChange={handleInputChange}
-                  className="w-full sm:w-2/3 lg:w-1/2 px-4 py-2 border border-gray-300 rounded-lg"
-                  required
-                />
-                {errors.path && <p className="text-red-500 text-sm">{errors.path}</p>}
-              </div>
-
-              {/* Badge Input */}
-              <div className="mb-4">
-                <label className="block text-gray-700">Badge</label>
-                <input
-                  type="text"
-                  name="badge"
-                  value={newService.badge}
-                  onChange={handleInputChange}
-                  className="w-full sm:w-2/3 lg:w-1/2 px-4 py-2 border border-gray-300 rounded-lg"
-                  required
-                />
-                {errors.badge && <p className="text-red-500 text-sm">{errors.badge}</p>}
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                {isEditMode ? "Update Service" : "Create Service"}
+            <div className="mb-4">
+              <label className="block mb-1 font-medium">Features</label>
+              {newService.features.map((feature, index) => (
+                <div key={index} className="flex items-center gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={feature}
+                    onChange={(e) => handleFeatureChange(e, index)}
+                    className="w-full border px-4 py-2 rounded"
+                  />
+                  {newService.features.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFeature(index)}
+                      className="text-red-500"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button type="button" onClick={handleAddFeature} className="text-blue-500">
+                Add Feature
               </button>
-            </form>
-          </div>
-        )}
+              {errors.features && <p className="text-red-500 text-sm">{errors.features}</p>}
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-1 font-medium">Path</label>
+              <input
+                type="text"
+                name="path"
+                value={newService.path}
+                onChange={handleInputChange}
+                className="w-full border px-4 py-2 rounded"
+              />
+              {errors.path && <p className="text-red-500 text-sm">{errors.path}</p>}
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-1 font-medium">Badge</label>
+              <input
+                type="text"
+                name="badge"
+                value={newService.badge}
+                onChange={handleInputChange}
+                className="w-full border px-4 py-2 rounded"
+              />
+              {errors.badge && <p className="text-red-500 text-sm">{errors.badge}</p>}
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-1 font-medium">Image</label>
+              <input type="file" accept="image/*" onChange={handleImageChange} />
+              {previewImage && (
+                <img src={previewImage} alt="Preview" className="mt-2 w-40 h-auto rounded" />
+              )}
+              {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
+            </div>
+
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700"
+            >
+              {isEditMode ? "Update Service" : "Create Service"}
+            </button>
+          </form>
+        </div>
       </div>
     </AdminLayout>
   );
