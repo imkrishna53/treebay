@@ -11,7 +11,6 @@ import authRoutes from "./routes/auth.js";
 import servicesRoutes from "./routes/services.js";
 import uploadRoutes from "./routes/upload.js";
 import contactRoutes from "./routes/contact.js";
-import OurServicesRoutes from './routes/ourservices.js'; 
 import OurServices from "./models/OurServices.js";
 
 
