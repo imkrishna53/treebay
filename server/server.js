@@ -12,6 +12,7 @@ import servicesRoutes from "./routes/services.js";
 import uploadRoutes from "./routes/upload.js";
 import contactRoutes from "./routes/contact.js";
 import OurServicesRoutes from './routes/ourservices.js'; 
+import OurServices from "./models/OurServices.js";
 
 
 // Fix for __dirname in ES modules
@@ -87,7 +88,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/services", servicesRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/contact', contactRoutes);
-app.use('/api/our-services', OurServicesRoutes);
+app.use('/api/our-services', OurServices);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
