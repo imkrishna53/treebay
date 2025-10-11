@@ -10,8 +10,8 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-// Setup uploads path: /uploads/services (matching your server.js structure)
-const uploadsDir = path.join(process.cwd(), 'uploads', 'services');
+// Setup uploads path: /uploads/services1 (matching your server.js structure)
+const uploadsDir = path.join(process.cwd(), 'uploads', 'services1');
 
 // Ensure uploads directory exists
 if (!fs.existsSync(uploadsDir)) {
@@ -82,7 +82,7 @@ router.post('/', upload.single('image'), async (req, res) => {
       return res.status(400).json({ message: 'All text fields are required.' });
     }
 
-    const imagePath = `uploads/services/${req.file.filename}`;
+    const imagePath = `uploads/services1/${req.file.filename}`;
 
     const newService = new OurService({
       title,
@@ -174,7 +174,7 @@ router.put('/:id', upload.single('image'), async (req, res) => {
           console.log('Error deleting old image:', error);
         }
       }
-      updatedFields.image = `uploads/services/${req.file.filename}`;
+      updatedFields.image = `uploads/services1/${req.file.filename}`;
     }
 
     const updatedService = await OurService.findByIdAndUpdate(
