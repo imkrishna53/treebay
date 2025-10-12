@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 const router = express.Router();
 
 // Setup uploads path: /uploads/services
-const uploadsDir = path.join('/servers/', 'uploads', 'services');
+const uploadsDir = '/var/www/html/treebay/servers/uploads/services';
 
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
