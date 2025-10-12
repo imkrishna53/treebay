@@ -12,11 +12,19 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-// Setup uploads path: /uploads/services
-const uploadsDir = '/var/www/html/treebay/servers/uploads/services';
+// Get the absolute path to uploads directory - FIX THIS LINE
+const uploadsDir = path.join(process.cwd(), 'uploads', 'services'); // Use process.cwd() instead
 
+console.log('📁 Upload directory setup:');
+console.log('   📍 __dirname:', __dirname);
+console.log('   📍 process.cwd():', process.cwd());
+console.log('   📁 Uploads directory:', uploadsDir);
+
+// Ensure uploads directory exists
 if (!fs.existsSync(uploadsDir)) {
+  console.log('⚠️  Creating uploads directory...');
   fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('✅ Created uploads directory:', uploadsDir);
 }
 
 // Multer config
@@ -25,9 +33,11 @@ const storage = multer.diskStorage({
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, `service-${uniqueSuffix}${ext}`);
+     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const fileExtension = path.extname(file.originalname);
+    const filename = 'service-' + uniqueSuffix + fileExtension;
+    console.log('📄 Generated filename:', filename);
+    cb(null, filename);
   }
 });
 
