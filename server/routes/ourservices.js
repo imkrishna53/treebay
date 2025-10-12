@@ -26,8 +26,6 @@
     fs.mkdirSync(uploadsDir, { recursive: true });
     console.log('✅ Created uploads directory:', uploadsDir);
   }
-// Serve static files from /var/www/html/treebay/servers/uploads
-app.use('/uploads', express.static('/var/www/html/treebay/servers/uploads'));
   // Multer config
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
