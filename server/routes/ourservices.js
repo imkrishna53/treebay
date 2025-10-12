@@ -64,7 +64,7 @@ router.post('/', upload.single('image'), async (req, res) => {
       title,
       description,
       image: imagePath,
-      features: features ? JSON.parse(features) : [],
+      features: features ? JSON.stringify(features) : [],
       path: routePath,
       badge,
     });
