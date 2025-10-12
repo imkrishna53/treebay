@@ -24,8 +24,14 @@ export default function NewOurServices() {
     const fetchServices = async () => {
       try {
         const response = await fetch(`${apiBaseUrl}/api/our-services`);
-        const data = await response.json();
+        if(response.status != 404)
+          {
+          const data = await response.json();
+          
         setServices(data);
+      }
+        console.log(response);
+        
       } catch (error) {
         console.error("Error fetching services:", error);
       }
@@ -189,7 +195,7 @@ export default function NewOurServices() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {services.map((service) => (
+          {services && services.map((service) => (
             <div key={service._id} className="bg-white rounded shadow p-4">
               <img
                 src={`${apiBaseUrl}/${service.image}`}
