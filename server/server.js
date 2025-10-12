@@ -82,8 +82,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   }
 }));
 
-// Serve static files from /var/www/html/treebay/servers/uploads
-app.use('/uploads', express.static('/var/www/html/treebay/servers/uploads'));
+// // Serve static files from /var/www/html/treebay/servers/uploads
+// app.use('/uploads', express.static('/var/www/html/treebay/servers/uploads'));
 app.use("/api/auth", authRoutes);
 app.use("/api/services", servicesRoutes);
 app.use('/api/upload', uploadRoutes);

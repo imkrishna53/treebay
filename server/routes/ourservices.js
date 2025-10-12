@@ -13,7 +13,7 @@
   const router = express.Router();
 
   // Get the absolute path to uploads directory - FIX THIS LINE
-  const uploadsDir = path.join(process.cwd(), 'uploads', 'services'); // Use process.cwd() instead
+  const uploadsDir = path.join(__dirname, 'uploads') // Use process.cwd() instead
 
   console.log('📁 Upload directory setup:');
   console.log('   📍 __dirname:', __dirname);
