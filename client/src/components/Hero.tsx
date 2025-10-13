@@ -65,14 +65,18 @@ export default function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
-      <div className="absolute inset-0">
-        <img 
-          src={heroImage} 
-          alt="Modern chemistry laboratory" 
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-background/30"></div>
-      </div>
+      <div className="absolute inset-0 z-0 overflow-hidden">
+  <video
+    className="w-full h-full object-cover"
+    src="https://amzn-services-bucket.s3.ap-south-1.amazonaws.com/newfile/hero.mp4"
+    autoPlay
+    muted
+    loop
+    playsInline
+  />
+  <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-background/30" />
+</div>
+
 
       {/* Floating Molecules Animation */}
       <div className="absolute inset-0 pointer-events-none">
