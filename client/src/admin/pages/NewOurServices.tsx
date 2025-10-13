@@ -37,6 +37,10 @@ export default function NewOurServices() {
       }
     };
     fetchServices();
+
+
+
+    
   }, []);
 
   const handleInputChange = (e) => {
@@ -101,6 +105,7 @@ export default function NewOurServices() {
     if (!validateForm()) return;
 
     try {
+      
       const formData = new FormData();
       formData.append("title", newService.title);
       formData.append("description", newService.description);
@@ -110,20 +115,36 @@ export default function NewOurServices() {
         formData.append(`features[${index}]`, feature);
       });
 
+      
       if (newService.image instanceof File) {
         formData.append("image", newService.image);
       }
 
-      const url = isEditMode
+    const url = isEditMode
         ? `${apiBaseUrl}/api/our-services/${currentServiceId}`
         : `${apiBaseUrl}/api/our-services`;
+     const method = 'POST';
+      const res = await fetch(`${apiBaseUrl}/api/s3`, {
+      method,
+      body: formData,
+    });
+    
+     const s3resp = await res.json();
 
-      const method = isEditMode ? "PUT" : "POST";
 
+    console.log(s3resp);
+    console.log('api url', url)
+    const imagePath = s3resp.fileUrl;
+    formData.append("awspath", imagePath);
       const response = await fetch(url, {
         method,
         body: formData,
       });
+
+      console.log('abhishek shuka');
+      console.log('post request')
+    
+console.log([formData, imagePath]);
 
       if (!response.ok) {
         throw new Error("Failed to submit service");

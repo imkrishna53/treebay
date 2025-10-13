@@ -1,13 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState ,useEffect} from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import axios from 'axios';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Mail, Phone, MapPin, Send, Clock } from 'lucide-react';
-import axios from 'axios'; 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+
+
+const API_URL = `${apiBaseUrl}/api/info`;
+
+const services = [
+  { value: 'ethanol', label: 'Ethanol' },
+  { value: 'isobutanol', label: 'Isobutanol' },
+  { value: 'hydrogen', label: 'Hydrogen Energy' },
+  { value: 'biogas', label: 'Biogas (FAME)' },
+  { value: 'general', label: 'General Inquiry' }
+];
 
 interface FormData {
   name: string;
@@ -26,25 +38,42 @@ export default function Contact() {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [services, setServices] = useState<{ value: string, label: string }[]>([]);  
+
+  const [Infomail,setInfomail]= useState("");
+  const [Infophone,setInfophone]= useState("");
+  const [Infoaddress,setInfoaddress]= useState("");
+  const [Infoface,setInfoface]= useState("");
+  const [Infoinsta,setInfoinsta]= useState("");
+  const [Infotwit,setInfotwit]= useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setsaved] = useState("");
 
   useEffect(() => {
-    const fetchServices = async () => {
+    const fetchHeader = async () => {
       try {
-        const response = await axios.get(`${apiBaseUrl}/api/services`);  
-        const serviceOptions = response.data.map((service: { _id: string, title: string }) => ({
-          value: service._id,  
-          label: service.title  
-        }));
-        setServices(serviceOptions);
+        // Fetch info data
+        const { data: infoData } = await axios.get(API_URL);
+        // console.log("Info Data:", infoData);
+
+        setInfomail(infoData.email || "");
+        setInfophone(infoData.phone || "");
+        setInfoaddress(infoData.Address || ""); // lowercase 'address' if that’s your backend field
+        setInfoface(infoData.social?.facebook || "");
+        setInfoinsta(infoData.social?.instagram || "");
+        setInfotwit(infoData.social?.twitter || "");
+
       } catch (error) {
-        console.error('Error fetching services:', error);
-        alert('Failed to load services. Please try again later.');
+        console.error(error);
+        setError("Failed to fetch current header description");
+      } finally {
+        setLoading(false);
       }
     };
-
-    fetchServices();
+    fetchHeader();
   }, []);
+
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -53,29 +82,14 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-   
-    const payload = {
-      name: formData.name,
-      email: formData.email,
-      company: formData.company,
-      serviceInterest: formData.service, 
-      message: formData.message
-    };
-
-    try {
-      
-      const response = await axios.post(`${apiBaseUrl}/api/contact`, payload);  
-
+    
+    // Simulate form submission
+    console.log('Form submitted:', formData);
+    setTimeout(() => {
       setIsSubmitting(false);
       alert('Thank you! We\'ll get back to you within 24 hours.');
-      
       setFormData({ name: '', email: '', company: '', service: '', message: '' });
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      setIsSubmitting(false);
-      alert('Something went wrong. Please try again later.');
-    }
+    }, 2000);
   };
 
   return (
@@ -107,8 +121,8 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="font-medium text-foreground">Email</h4>
-                  <p className="text-muted-foreground">info@treebaytechnologies.com</p>
-                  <p className="text-muted-foreground">sales@treebaytechnologies.com</p>
+                  <p className="text-muted-foreground">{Infomail}</p>
+                  <p className="text-muted-foreground">sales@treebaytechnology.com</p>
                 </div>
               </div>
 
@@ -118,8 +132,8 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="font-medium text-foreground">Phone</h4>
-                  <p className="text-muted-foreground">+1 (555) 123-4567</p>
-                  <p className="text-muted-foreground">+1 (555) 765-4321</p>
+                  <p className="text-muted-foreground">+91 {Infophone}</p>
+                  {/* <p className="text-muted-foreground">+1 (555) 765-4321</p> */}
                 </div>
               </div>
 
@@ -130,9 +144,7 @@ export default function Contact() {
                 <div>
                   <h4 className="font-medium text-foreground">Address</h4>
                   <p className="text-muted-foreground">
-                    1234 Chemical Park Drive<br />
-                    Industrial District, TX 75001<br />
-                    United States
+                    {Infoaddress}
                   </p>
                 </div>
               </div>

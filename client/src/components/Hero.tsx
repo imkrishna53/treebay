@@ -4,7 +4,12 @@ import { ArrowRight, Beaker, Zap, Leaf, Droplets } from 'lucide-react';
 import { Link } from 'wouter';
 import heroImage from '@assets/generated_images/Chemistry_lab_hero_background_86ba8fa9.png';
 import { motion } from 'framer-motion';
+import axios from "axios";
 import TypedText from './TypedText';
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const API_URL = `${apiBaseUrl}/api/home`;
+
+
 const features = [
   { icon: Beaker, text: 'Premium Chemical Solutions' },
   { icon: Zap, text: 'Advanced Energy Technology' },
@@ -12,8 +17,34 @@ const features = [
   { icon: Droplets, text: 'Industry Leading Quality' }
 ];
 
+
 export default function Hero() {
+
   const [currentFeature, setCurrentFeature] = useState(0);
+  const [heroDescription, setHeroDescription] = useState("");
+  const [heroyearsExperience, setYearsExperience] = useState("");
+  const [heroprojectsCompleted, setProjectCompleted] = useState("");
+  const [heroqualityRating, setQualityRating] = useState("");
+  const [error, setError] = useState("");
+  const [loader, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchHeader = async () => {
+      try {
+        const { data } = await axios.get(API_URL);
+        // alert(`ff ${data.description}`); 
+        setHeroDescription(data.description || "");
+        setYearsExperience(data.yearsExperience || "");
+        setProjectCompleted(data.projectsCompleted || "");
+        setQualityRating(data.qualityRating || "");
+      } catch (error) {
+        console.error(error);
+        setError("Failed to fetch current header description");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHeader();
+  }, []);
  const strings = [
     'Innovation...',
     'Solution...',
@@ -81,10 +112,12 @@ export default function Hero() {
             </span>
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Delivering premium chemical services and sustainable energy solutions 
+              {heroDescription}
+              {/* Delivering premium chemical services and sustainable energy solutions 
               for industrial applications worldwide. Quality, innovation, and sustainability 
-              at the forefront of everything we do.
+              at the forefront of everything we do. */}
             </p>
+            
           </motion.div>
 
           {/* Animated Features */}
@@ -126,15 +159,15 @@ export default function Hero() {
             className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-16 border-t border-border/30"
           >
             <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-primary">15+</div>
+              <div className="text-2xl md:text-3xl font-bold text-primary">{heroyearsExperience}</div>
               <div className="text-sm text-muted-foreground">Years Experience</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-primary">500+</div>
+              <div className="text-2xl md:text-3xl font-bold text-primary">{heroprojectsCompleted}</div>
               <div className="text-sm text-muted-foreground">Projects Completed</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-primary">99.8%</div>
+              <div className="text-2xl md:text-3xl font-bold text-primary">{heroqualityRating}</div>
               <div className="text-sm text-muted-foreground">Quality Rating</div>
             </div>
             <div className="text-center">

@@ -31,13 +31,15 @@ export default function CreateService() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [imagePreview, setImagePreview] = useState("");
-
+  const  [formData, setFormData] = useState(new FormData());
   const handleChange = (e) => {
     setService({ ...service, [e.target.name]: e.target.value });
   };
 
   // Image Upload Handler
   const handleImageUpload = async (e) => {
+    
+
     const file = e.target.files[0];
     if (!file) return;
 
@@ -58,7 +60,7 @@ export default function CreateService() {
     setError("");
 
     try {
-      const formData = new FormData();
+     
       formData.append('image', file);
 
       const response = await axios.post(UPLOAD_API_URL, formData, {
@@ -214,6 +216,20 @@ export default function CreateService() {
     setLoading(true);
     setError("");
 
+
+  const method = 'POST';
+      const res = await fetch(`${apiBaseUrl}/api/s3`, {
+      method,
+      body: formData,
+    });
+  const s3resp = await res.json();
+  console.log(formData);
+  
+  console.log(s3resp);
+  service.image = s3resp.fileUrl
+  
+  console.log('image ended')
+  
     try {
       await axios.post(API_URL, service, { headers: authHeader() });
       navigate("/admin/services");

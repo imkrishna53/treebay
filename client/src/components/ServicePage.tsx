@@ -124,8 +124,7 @@ export default function ServicePage() {
     whyChooseUs
   } = service;
 
-  // Get the correct image URL
-  const imageUrl = getImageUrl(image);
+  
 
   return (
     <div className="min-h-screen bg-background">
@@ -167,14 +166,14 @@ export default function ServicePage() {
                 </div>
               </div>
               <div className="relative">
-                {imageUrl ? (
+                {image ? (
                   <img 
-                    src={imageUrl} 
+                    src={image} 
                     alt={`${title} production facility`}
                     className="w-full h-80 object-cover rounded-lg shadow-lg"
                     onError={(e) => {
                       // If image fails to load, show fallback
-                      console.error('Image failed to load:', imageUrl);
+                      console.error('Image failed to load:', image);
                       e.target.style.display = 'none';
                       const fallback = e.target.nextElementSibling;
                       if (fallback) {
@@ -192,9 +191,9 @@ export default function ServicePage() {
                 ) : null}
                 <div 
                   className={`w-full h-80 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg shadow-lg flex items-center justify-center ${
-                    imageUrl ? 'absolute inset-0' : 'relative'
+                    image ? 'absolute inset-0' : 'relative'
                   }`}
-                  style={{ display: imageUrl ? 'none' : 'flex' }}
+                  style={{ display: image ? 'none' : 'flex' }}
                 >
                   <div className="text-center text-muted-foreground">
                     <div className="text-6xl mb-4">⚗️</div>

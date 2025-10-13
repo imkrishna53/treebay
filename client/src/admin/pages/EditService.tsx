@@ -27,7 +27,7 @@ export default function EditService() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [imagePreview, setImagePreview] = useState("");
-
+  const  [formData, setFormData] = useState(new FormData());
   useEffect(() => {
     const fetchService = async () => {
       try {
@@ -94,7 +94,6 @@ export default function EditService() {
     setError("");
 
     try {
-      const formData = new FormData();
       formData.append('image', file);
 
       const response = await axios.post(UPLOAD_API_URL, formData, {
@@ -266,6 +265,21 @@ export default function EditService() {
     setError("");
 
     try {
+
+const method = 'POST';
+const res = await fetch(`${apiBaseUrl}/api/s3`, {
+  method,
+  body: formData,
+});
+const s3resp = await res.json();
+console.log(formData);
+
+console.log(s3resp);
+service.image = s3resp.fileUrl
+
+
+
+
       await axios.put(`${API_URL}/${id}`, service, { headers: authHeader() });
       navigate("/admin/services");
     } catch (err) {

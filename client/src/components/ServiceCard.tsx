@@ -24,13 +24,12 @@ export default function ServiceCard({
   badge 
 }: ServiceCardProps) {
   
-const baseUrl = apiBaseUrl + '/' + image;
   return (
     <Card className="group hover-elevate transition-all duration-300 overflow-hidden">
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
         <img 
-          src={baseUrl}
+          src={image}
           alt={`${title} facility`}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
