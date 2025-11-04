@@ -49,6 +49,23 @@ const HomeSchema = new mongoose.Schema(
       type: String,
       default: "24/7",
     },
+    
+    /* -------------------------------
+       🆕 AWS Media Fields
+    -------------------------------- */
+
+    // Store a single video URL from AWS S3
+    heroVideoUrl: {
+      type: String,
+      trim: true,
+      default: "", // no video initially
+    },
+
+    // Store multiple image URLs (max 2)
+    heroImageUrls: {
+      type: [String],
+      default: [], // e.g. ["https://s3.amazonaws.com/.../img1.jpg", ...]
+    },
   },
   { timestamps: true } // ✅ Correct placement
 );

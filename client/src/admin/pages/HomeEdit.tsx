@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import AdminLayout from "../components/AdminLayout";
 import { Phone } from "lucide-react";
+import { log } from "console";
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 
@@ -33,6 +34,12 @@ export default function HomeEdit() {
   
   const [ServicesHeader,setServicesHeader]= useState("");
   const [ServicesDescription,setServicesDescription]= useState("");
+
+    // ✅ New states for uploads
+  const [heroVideo, setHeroVideo] = useState(null);
+  const [heroImages, setHeroImages] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const  [formData, setFormData] = useState(new FormData());
   // ✅ Fetch current description from backend
   useEffect(() => {
     const fetchHeader = async () => {
@@ -73,13 +80,60 @@ export default function HomeEdit() {
     fetchHeader();
   }, []);
 
+   // ✅ Handle video upload
+    const handleVideoChange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith("video/")) {
+        toast.error("Please upload a valid video file.");
+        return;
+      }
+      setHeroVideo(file);
+    };
+
+  const removeVideo = () => {
+    setHeroVideo(null);
+  };
   // ✅ Handle update/save
   const handleSave = async () => {
     try {
       setSaving(true);
       console.log({ description: headerDescription, yearsExperience : heroyearsExperience, qualityRating : heroqualityRating, projectsCompleted : heroprojectsCompleted,hero_design_string1:heroDesignString1,hero_design_string2:heroDesignString2,hero_feature: heroFeature,sevices_description:ServicesDescription,
-        sevices_header : ServicesHeader })
-      // await axios.put(API_URL, { description: headerDescription, yearsExperience : heroyearsExperience, qualityRating : heroqualityRating, projectsCompleted : heroprojectsCompleted });
+        sevices_header : ServicesHeader, heroImages:heroImages, heroVideo:heroVideo })
+  
+  
+
+
+  const uploadedUrls = [];
+const method = 'POST';
+    for (const heroImage of heroImages) {
+      console.log('image aane wali h', heroImages);
+      const formData = new FormData();
+      console.log(heroImage.file);
+      
+      formData.append("image", heroImage.file);
+      
+      const res = await fetch(`${apiBaseUrl}/api/s3`, {
+        method,
+        body: formData,
+      });
+      
+      const s3resp = await res.json();
+      console.log(formData);
+  
+      console.log(s3resp.fileUrl);
+
+      uploadedUrls.push(s3resp.fileUrl);
+    }
+    const formData = new FormData();
+    formData.append("image", heroVideo);
+      
+    const res = await fetch(`${apiBaseUrl}/api/s3`, {
+        method,
+        body: formData,
+    });
+    const s3resp = await res.json();
+        // await axios.put(API_URL, { description: headerDescription, yearsExperience : heroyearsExperience, qualityRating : heroqualityRating, projectsCompleted : heroprojectsCompleted });
       await axios.put(API_URL, {
         description: headerDescription,
         yearsExperience: heroyearsExperience,
@@ -89,7 +143,9 @@ export default function HomeEdit() {
         hero_design_string2:heroDesignString2,
         hero_feature:heroFeature,
         sevices_description:ServicesDescription,
-        sevices_header : ServicesHeader
+        sevices_header : ServicesHeader,
+        heroImageUrls:uploadedUrls, 
+        heroVideoUrl:s3resp.fileUrl
       });
       
       setsaved("Succesfully saved to the db....");
@@ -133,6 +189,113 @@ export default function HomeEdit() {
 
   return (
     <AdminLayout>
+
+      <div className="p-6 max-w-3xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Home Page slider </h1>
+          <p className="text-gray-600 mt-1">
+            Add Home page sliders
+          </p>
+        </div>
+
+     {/* --- Hero Media Upload Section --- */}
+     <div className="mt-6">
+       <h2 className="text-lg font-semibold mb-2">
+         Hero Media Uploads (Video & Images)
+       </h2>
+     
+       {/* Video Upload */}
+       <div className="mb-4">
+         <label className="block text-sm font-medium text-gray-700 mb-1">
+           Upload Hero Video (max 1)
+         </label>
+         {heroVideo ? (
+           <div className="flex items-center gap-3">
+             <video
+               src={URL.createObjectURL(heroVideo)}
+               controls
+               className="w-48 rounded"
+             />
+             <button
+               onClick={removeVideo}
+               className="px-2 py-1 bg-red-500 text-white rounded"
+             >
+               Remove
+             </button>
+           </div>
+         ) : (
+           <input
+             type="file"
+             accept="video/*"
+             onChange={handleVideoChange}
+             className="border p-2 rounded w-full"
+           />
+         )}
+       </div>
+     
+       {/* Image Upload */}
+       <div>
+         <label className="block text-sm font-medium text-gray-700 mb-1">
+           Upload Hero Images (max 2)
+         </label>
+         <input
+           type="file"
+           accept="image/*"
+           multiple
+           onChange={(e) => {
+             const files = Array.from(e.target.files);
+             console.log(files);
+             if (files.length + heroImages.length > 2) {
+               toast.error("You can upload a maximum of 2 images.");
+               return;
+             }
+             const invalidFiles = files.filter((f) => !f.type.startsWith("image/"));
+             if (invalidFiles.length > 0) {
+               toast.error("Only image files are allowed.");
+               return;
+             }
+             // ✅ Create object URLs for previews
+             const filesWithPreview = files.map((file) => ({
+               file,
+               preview: URL.createObjectURL(file),
+             }));
+             setHeroImages((prev) => [...prev, ...filesWithPreview]);
+           }}
+           className="border p-2 rounded w-full"
+         />
+     
+         {/* ✅ Preview selected images */}
+         {heroImages.length > 0 && (
+           <div className="flex gap-3 mt-3 flex-wrap">
+             {heroImages.map((imgObj, index) => (
+               <div key={index} className="relative">
+                 <img
+                   src={imgObj.preview}
+                   alt={`Preview ${index}`}
+                   className="w-24 h-24 object-cover rounded"
+                 />
+                 <button
+                   onClick={() => {
+                     // revoke object URL to avoid memory leak
+                     URL.revokeObjectURL(imgObj.preview);
+                     setHeroImages(heroImages.filter((_, i) => i !== index));
+                   }}
+                   className="absolute top-0 right-0 bg-red-500 text-white rounded-full px-1.5 py-0.5 text-xs"
+                 >
+                   ✕
+                 </button>
+               </div>
+             ))}
+           </div>
+         )}
+       </div>
+     </div>
+     
+
+
+        </div>
+
+
         <div className="p-6 max-w-3xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Edit Our services Header & Description </h1>

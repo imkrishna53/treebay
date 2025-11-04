@@ -53,12 +53,13 @@ router.put("/", async (req, res) => {
   try {
     // Destructure directly from req.body
     // const { description, yearsExperience, projectsCompleted, qualityRating } = req.body;
-    const { description, yearsExperience, projectsCompleted, qualityRating, hero_design_string1, hero_design_string2, hero_feature, sevices_header,sevices_description } = req.body;
+    const { description, yearsExperience, projectsCompleted, qualityRating, hero_design_string1, hero_design_string2, hero_feature, sevices_header,sevices_description, heroImageUrls, heroVideoUrl } = req.body;
 
 
     let home = await Home.findOne();
     console.log("PUT request received:", home);
-
+    console.log(heroImageUrls, heroVideoUrl);
+    
     if (home) {
       // Update existing fields only if they exist in the request
       if (description) home.description = description;
@@ -72,13 +73,14 @@ router.put("/", async (req, res) => {
       if (hero_feature) home.hero_feature = hero_feature;
       if (sevices_header) home.sevices_header = sevices_header;
       if (sevices_description) home.sevices_description = sevices_description;
-
+      if(heroImageUrls) home.heroImageUrls = heroImageUrls;
+      if(heroVideoUrl) home.heroVideoUrl = heroVideoUrl;
       const saved = await home.save();
       console.log("Updated home:", saved);
       res.json(saved);
     } else {
       // Create new document
-      home = new Home({ description, yearsExperience, projectsCompleted, qualityRating });
+      home = new Home({ description, yearsExperience, projectsCompleted, qualityRating, heroVideoUrl,heroImageUrls });
       await home.save();
       res.json(home);
     }

@@ -4,11 +4,26 @@ import { ArrowRight, Beaker, Zap, Leaf, Droplets } from 'lucide-react';
 import { Link } from 'wouter';
 import heroImage from '@assets/generated_images/Chemistry_lab_hero_background_86ba8fa9.png';
 import { motion } from 'framer-motion';
+
+import Slider from 'react-slick';
 import axios from "axios";
 import TypedText from './TypedText';
+import "slick-carousel/slick/slick.css"; 
+import "slick-carousel/slick/slick-theme.css";
+
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const API_URL = `${apiBaseUrl}/api/home`;
 
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    arrows: true,
+    autoplay: true,
+    autoplaySpeed: 4000
+  };
 
 const features = [
   { icon: Beaker, text: 'Premium Chemical Solutions' },
@@ -33,6 +48,7 @@ export default function Hero() {
   const [heroDesignString2, setHeroDesignString2] = useState([]);
   const [heroFeature, setHeroFeature] = useState([{ key: "", value: "" }]);
   const defaultStrings = ["Innovation...", "Solution...", "Sustainability...", "Excellence..."];
+  const [mediaItems, setMediaItems] = useState([]);
   useEffect(() => {
     const fetchHeader = async () => {
       try {
@@ -40,6 +56,11 @@ export default function Hero() {
           setHeroDesignString1(defaultStrings);
         }
         const { data } = await axios.get(API_URL);
+        //setMediaItems(['image': data.heroImageUrls, 'video': data.heroVideoUrl]);
+        setMediaItems([
+          ...(data.heroImageUrls?.map(url => ({ type: 'image', url })) || []),
+          ...(data.heroVideoUrl ? [{ type: 'video', url: data.heroVideoUrl }] : [])
+        ]);
         // alert(`ff ${data.description}`); 
         setHeroDescription(data.description || "");
         setYearsExperience(data.yearsExperience || "");
@@ -88,14 +109,26 @@ export default function Hero() {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0 overflow-hidden">
-  <video
-    className="w-full h-full object-cover"
+  {/* <video className="w-full h-full object-cover"
     src="https://amzn-services-bucket.s3.ap-south-1.amazonaws.com/newfile/hero.mp4"
     autoPlay
     muted
     loop
     playsInline
-  />
+  /> */}
+
+   <Slider {...sliderSettings}>
+          {mediaItems.map((item, idx) => (
+            <div key={idx} className="w-full h-[90vh]">
+              {item.type === "image" ? (
+                <img className="w-full h-full object-cover" src={item.url} alt={`media-${idx}`} />
+              ) : (
+                <video className="w-full h-full object-cover" src={item.url} autoPlay muted loop playsInline />
+              )}
+            </div>
+          ))}
+        </Slider>
+
   <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-background/30" />
 </div>
 
