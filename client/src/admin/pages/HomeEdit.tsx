@@ -38,14 +38,20 @@ export default function HomeEdit() {
     // ✅ New states for uploads
   const [heroVideo, setHeroVideo] = useState(null);
   const [heroImages, setHeroImages] = useState([]);
+
+  const [heroVideoUrl, setHeroVideoUrl] = useState(null);
+  const [heroImageUrls, setHeroImagesUrl] = useState([]);
+
   const [uploading, setUploading] = useState(false);
-  const  [formData, setFormData] = useState(new FormData());
+    const [mediaItems, setMediaItems] = useState([]);
   // ✅ Fetch current description from backend
   useEffect(() => {
     const fetchHeader = async () => {
       try {
         const { data: homeData } = await axios.get(API_URL);
         
+        setHeroVideoUrl(homeData.heroVideoUrl);
+        setHeroImagesUrl(homeData.heroImageUrls);
         setHeaderDescription(homeData.description || "");
         setYearsExperience(homeData.yearsExperience || "");
         setProjectCompleted(homeData.projectsCompleted || "");
@@ -209,6 +215,7 @@ const method = 'POST';
          <label className="block text-sm font-medium text-gray-700 mb-1">
            Upload Hero Video (max 1)
          </label>
+         
          {heroVideo ? (
            <div className="flex items-center gap-3">
              <video
@@ -231,6 +238,17 @@ const method = 'POST';
              className="border p-2 rounded w-full"
            />
          )}
+         {heroVideoUrl && (
+           <div className="flex items-center gap-3">
+             <video
+               src={heroVideoUrl}
+               controls
+               className="w-48 rounded"
+             />
+             
+           </div>
+         )
+         }
        </div>
      
        {/* Image Upload */}
@@ -265,6 +283,29 @@ const method = 'POST';
          />
      
          {/* ✅ Preview selected images */}
+        {
+          heroImageUrls.length > 0 && (
+           <div className="flex gap-3 mt-3 flex-wrap">
+             {heroImageUrls.map((imgObj, index) => (
+               <div key={index} className="relative">
+                 <img
+                   src={imgObj}
+                   alt={`Preview ${index}`}
+                   className="w-24 h-24 object-cover rounded"
+                 />
+                 {/* <button
+                   onClick={() => {
+                      setHeroImagesUrl(heroImageUrls.filter((_, i) => i !== index));
+                   }}
+                   className="absolute top-0 right-0 bg-red-500 text-white rounded-full px-1.5 py-0.5 text-xs"
+                 >
+                   ✕
+                 </button> */}
+               </div>
+             ))}
+           </div>
+         )
+        }
          {heroImages.length > 0 && (
            <div className="flex gap-3 mt-3 flex-wrap">
              {heroImages.map((imgObj, index) => (
