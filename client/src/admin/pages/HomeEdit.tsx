@@ -101,68 +101,79 @@ export default function HomeEdit() {
     setHeroVideo(null);
   };
   // ✅ Handle update/save
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-      console.log({ description: headerDescription, yearsExperience : heroyearsExperience, qualityRating : heroqualityRating, projectsCompleted : heroprojectsCompleted,hero_design_string1:heroDesignString1,hero_design_string2:heroDesignString2,hero_feature: heroFeature,sevices_description:ServicesDescription,
-        sevices_header : ServicesHeader, heroImages:heroImages, heroVideo:heroVideo })
-  
-  
+const handleSave = async () => {
+  try {
+    setSaving(true);
 
+    // ✅ Validation: ensure total images ≤ 2 (existing + new)
+    const totalImages = heroImageUrls.length + heroImages.length;
+    if (totalImages > 2) {
+      console.log('You can upload a maximum of 2 images in total');
+      
+      toast.error("You can upload a maximum of 2 images in total.");
+      setSaving(false);
+      return;
+    }
 
-  const uploadedUrls = [];
-const method = 'POST';
+    // ✅ Step 1: Upload new images to S3 and collect URLs
+    const uploadedUrls = [];
     for (const heroImage of heroImages) {
-      console.log('image aane wali h', heroImages);
       const formData = new FormData();
-      console.log(heroImage.file);
-      
       formData.append("image", heroImage.file);
-      
+
       const res = await fetch(`${apiBaseUrl}/api/s3`, {
-        method,
+        method: "POST",
         body: formData,
       });
-      
-      const s3resp = await res.json();
-      console.log(formData);
-  
-      console.log(s3resp.fileUrl);
 
+      const s3resp = await res.json();
       uploadedUrls.push(s3resp.fileUrl);
     }
-    const formData = new FormData();
-    formData.append("image", heroVideo);
-      
-    const res = await fetch(`${apiBaseUrl}/api/s3`, {
-        method,
+
+    // ✅ Step 2: Upload video if any (keep existing if not changed)
+    let videoUrl = heroVideoUrl;
+    if (heroVideo) {
+      const formData = new FormData();
+      formData.append("image", heroVideo);
+
+      const res = await fetch(`${apiBaseUrl}/api/s3`, {
+        method: "POST",
         body: formData,
-    });
-    const s3resp = await res.json();
-        // await axios.put(API_URL, { description: headerDescription, yearsExperience : heroyearsExperience, qualityRating : heroqualityRating, projectsCompleted : heroprojectsCompleted });
-      await axios.put(API_URL, {
-        description: headerDescription,
-        yearsExperience: heroyearsExperience,
-        qualityRating: heroqualityRating,
-        projectsCompleted: heroprojectsCompleted,
-        hero_design_string1:heroDesignString1,
-        hero_design_string2:heroDesignString2,
-        hero_feature:heroFeature,
-        sevices_description:ServicesDescription,
-        sevices_header : ServicesHeader,
-        heroImageUrls:uploadedUrls, 
-        heroVideoUrl:s3resp.fileUrl
       });
-      
-      setsaved("Succesfully saved to the db....");
-      toast.success("Header description updated successfully");
-    } catch (error) {
-      console.error(error);
-      setError("Failed to update description");
-    } finally {
-      setSaving(false);
+
+      const s3resp = await res.json();
+      videoUrl = s3resp.fileUrl;
     }
-  };
+
+    // ✅ Step 3: Combine old + new image URLs
+    const finalHeroImageUrls = [...heroImageUrls, ...uploadedUrls];
+
+    // ✅ Step 4: Update backend
+    await axios.put(API_URL, {
+      description: headerDescription,
+      yearsExperience: heroyearsExperience,
+      qualityRating: heroqualityRating,
+      projectsCompleted: heroprojectsCompleted,
+      hero_design_string1: heroDesignString1,
+      hero_design_string2: heroDesignString2,
+      hero_feature: heroFeature,
+      sevices_description: ServicesDescription,
+      sevices_header: ServicesHeader,
+      heroImageUrls: finalHeroImageUrls, // append instead of overwrite
+      heroVideoUrl: videoUrl,
+    });
+
+    setsaved("Successfully saved to the database.");
+    toast.success("Updated successfully!");
+  } catch (error) {
+    console.error(error);
+    setError("Failed to update data");
+  } finally {
+    setSaving(false);
+  }
+};
+
+
 
 
   const handleInfoSave = async () => {
@@ -195,7 +206,6 @@ const method = 'POST';
 
   return (
     <AdminLayout>
-
       <div className="p-6 max-w-3xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Home Page slider </h1>
@@ -211,45 +221,53 @@ const method = 'POST';
        </h2>
      
        {/* Video Upload */}
-       <div className="mb-4">
-         <label className="block text-sm font-medium text-gray-700 mb-1">
-           Upload Hero Video (max 1)
-         </label>
-         
-         {heroVideo ? (
-           <div className="flex items-center gap-3">
-             <video
-               src={URL.createObjectURL(heroVideo)}
-               controls
-               className="w-48 rounded"
-             />
-             <button
-               onClick={removeVideo}
-               className="px-2 py-1 bg-red-500 text-white rounded"
-             >
-               Remove
-             </button>
-           </div>
-         ) : (
-           <input
-             type="file"
-             accept="video/*"
-             onChange={handleVideoChange}
-             className="border p-2 rounded w-full"
-           />
-         )}
-         {heroVideoUrl && (
-           <div className="flex items-center gap-3">
-             <video
-               src={heroVideoUrl}
-               controls
-               className="w-48 rounded"
-             />
-             
-           </div>
-         )
-         }
-       </div>
+ {/* Video Upload */}
+<div className="mb-4">
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Upload Hero Video (max 1)
+  </label>
+
+  {/* If new video selected (not yet uploaded) */}
+  {heroVideo ? (
+    <div className="relative inline-block">
+      <video
+        src={URL.createObjectURL(heroVideo)}
+        controls
+        className="w-48 rounded"
+      />
+      <button
+        onClick={() => setHeroVideo(null)}
+        className="absolute top-1 right-1 bg-red-500 text-white rounded-full px-1.5 py-0.5 text-xs"
+      >
+        ✕
+      </button>
+    </div>
+  ) : heroVideoUrl ? (
+    // If video already exists from backend
+    <div className="relative inline-block">
+      <video
+        src={heroVideoUrl}
+        controls
+        className="w-48 rounded"
+      />
+      <button
+        onClick={() => setHeroVideoUrl(null)}
+        className="absolute top-1 right-1 bg-red-500 text-white rounded-full px-1.5 py-0.5 text-xs"
+      >
+        ✕
+      </button>
+    </div>
+  ) : (
+    // If no video uploaded yet
+    <input
+      type="file"
+      accept="video/*"
+      onChange={handleVideoChange}
+      className="border p-2 rounded w-full"
+    />
+  )}
+</div>
+
      
        {/* Image Upload */}
        <div>
@@ -293,14 +311,14 @@ const method = 'POST';
                    alt={`Preview ${index}`}
                    className="w-24 h-24 object-cover rounded"
                  />
-                 {/* <button
+                 <button
                    onClick={() => {
                       setHeroImagesUrl(heroImageUrls.filter((_, i) => i !== index));
                    }}
                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full px-1.5 py-0.5 text-xs"
                  >
                    ✕
-                 </button> */}
+                 </button>
                </div>
              ))}
            </div>
