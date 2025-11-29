@@ -15,6 +15,8 @@ import OurServicesRoutes from './routes/ourServices.js';
 import S3Routes from './routes/S3.js'
 import HomeRoutes from "./routes/Home.js";
 import InfoRoutes from "./routes/Info.js"
+
+import logoRoute from "./routes/LogoRoute.js";
 // Fix for __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -93,7 +95,7 @@ app.use('/api/our-services', OurServicesRoutes);
 app.use('/api/s3', S3Routes);
 app.use('/api/home', HomeRoutes);
 app.use('/api/info',InfoRoutes);
-
+app.use("/api/logo", logoRoute);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

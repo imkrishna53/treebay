@@ -19,6 +19,7 @@ export default function AdminLayout({ children }) {
           <Link to="/admin/contact">Queries</Link>
           <Link to="/admin/our-services">Our Services</Link>
           <Link to="/admin/home">Home</Link>
+          <Link to="/admin/logoedit">Logo settings</Link>
 
           <button onClick={logout} className="mt-6 text-sm bg-white/10 p-2 rounded">Logout</button>
         </nav>

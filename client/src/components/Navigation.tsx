@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link  } from "react-router-dom";
 import { useLocation } from 'wouter';
 import LogoImage from '@/assets/images/logo.png';
+import axios from 'axios';
 // Animation variants (same as before)
 const menuVariants = {
   closed: {
@@ -83,12 +84,24 @@ export default function Navigation() {
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
+    const [LogoImage, setLogoImage] = useState('');
   const navigate = useNavigate();
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
   useEffect(() => {
+    fetchLogo();
     fetchServices();
   }, []);
 
+  const fetchLogo = async() => {
+    try {
+      const { data } = await axios.get(`${apiBaseUrl}/api/logo`);
+      setLogoImage(data.logoUrl);
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
   const fetchServices = async () => {
     try {
       const response = await fetch(`${apiBaseUrl}/api/services?fields=title,slug`);

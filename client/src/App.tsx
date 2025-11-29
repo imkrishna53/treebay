@@ -21,6 +21,7 @@ import Query from "./admin/pages/Contact";
 import CreateOurServices from "./admin/pages/CreateOurServices";
 import NewOurServices from "./admin/pages/NewOurServices";
 import HomeEdit from "./admin/pages/HomeEdit";
+import LogoEdit from "./admin/pages/LogoEdit";
 
 function Router() {
 
@@ -46,6 +47,7 @@ return (
 <Route path="/admin/create/our-services" element={< CreateOurServices/>} />
 <Route path="/admin/our-services" element={< NewOurServices/>} />
 <Route path="/admin/home" element={< HomeEdit/>} />
+<Route path="/admin/logoedit" element={< LogoEdit/>} />
 
     {/* 404 fallback */}
     <Route path="*" element={<NotFound />} />
