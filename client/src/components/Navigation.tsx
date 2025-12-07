@@ -220,13 +220,13 @@ export default function Navigation() {
                           whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
                           className="border-t border-border"
                         >
-                          <Link
+                          {/* <Link
                             to="/services"
                             className="block px-4 py-3 text-sm font-semibold text-popover-foreground hover:text-primary transition-colors"
                             onClick={() => setIsServicesOpen(false)}
                           >
                             View All Services
-                          </Link>
+                          </Link> */}
                         </motion.div>
                       </>
                     )}
