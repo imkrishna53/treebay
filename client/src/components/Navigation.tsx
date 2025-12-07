@@ -367,13 +367,13 @@ export default function Navigation() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
                 >
-                  <Link 
+                  {/* <Link 
                     to="/services" 
                     className="block px-4 py-3 text-foreground hover-elevate rounded-md hover:text-primary transition-colors font-semibold"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     View All Services
-                  </Link>
+                  </Link> */}
                 </motion.div>
               </div>
               
