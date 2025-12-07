@@ -7,19 +7,20 @@ import { Label } from '@/components/ui/label';
 import axios from 'axios';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Mail, Phone, MapPin, Send, Clock } from 'lucide-react';
+import { toast } from "react-hot-toast";
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 
 
 const API_URL = `${apiBaseUrl}/api/info`;
 
-const services = [
-  { value: 'ethanol', label: 'Ethanol' },
-  { value: 'isobutanol', label: 'Isobutanol' },
-  { value: 'hydrogen', label: 'Hydrogen Energy' },
-  { value: 'biogas', label: 'Biogas (FAME)' },
-  { value: 'general', label: 'General Inquiry' }
-];
+// const services = [
+//   { value: 'ethanol', label: 'Ethanol' },
+//   { value: 'isobutanol', label: 'Isobutanol' },
+//   { value: 'hydrogen', label: 'Hydrogen Energy' },
+//   { value: 'biogas', label: 'Biogas (FAME)' },
+//   { value: 'general', label: 'General Inquiry' }
+// ];
 
 interface FormData {
   name: string;
@@ -49,8 +50,31 @@ export default function Contact() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setsaved] = useState("");
-
+const [services, setServices] = useState([]);
   useEffect(() => {
+    const fetchServices = async () => {
+    try {
+      console.log(`${apiBaseUrl}/api/services`);
+      
+      const response = await axios.get(`${apiBaseUrl}/api/services`);
+      console.log('kkkkkkkkkkkkkkkkkkkkkkk');
+      
+      
+      const servicesData = response.data;
+
+      // Convert API data → { value: '', label: '' }
+        const formatted = servicesData.map(item => ({
+        value: item._id, 
+        label: item.title
+      }));
+
+      setServices(formatted);
+    } catch (error) {
+      console.error("Failed to fetch services:", error);
+    }
+  };
+
+  fetchServices();
     const fetchHeader = async () => {
       try {
         // Fetch info data
@@ -82,14 +106,30 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    console.log('Form submitted:', formData);
-    setTimeout(() => {
+    try {
+      const response = await axios.post(`${apiBaseUrl}/api/contact`, {
+      name: formData.name,
+      email: formData.email,
+      company: formData.company,
+      serviceInterest: formData.service, 
+      message: formData.message
+    });
+
+      toast.success('Thank you! We\'ll get back to you within 24 hours.');
+      setFormData({
+        name: "",
+        email: "",
+        company: "",
+        service: "",
+        message: ""
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to send message. Please try again later.");
+    } finally {
       setIsSubmitting(false);
-      alert('Thank you! We\'ll get back to you within 24 hours.');
       setFormData({ name: '', email: '', company: '', service: '', message: '' });
-    }, 2000);
+    }
   };
 
   return (

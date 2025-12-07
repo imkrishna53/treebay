@@ -6,6 +6,7 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   try {
     const { name, email, company, serviceInterest, message } = req.body;
+console.log(req.body);
 
     const newContact = new Contact({
       fullName: name,
